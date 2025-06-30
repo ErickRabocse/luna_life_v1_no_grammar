@@ -1,0 +1,102 @@
+/* components/DragDropSentence.css */
+
+.drag-drop-activity-content {
+  background-color: var(--background-color);
+  border-radius: 8px;
+  padding: 25px; /* Padding interno para el contenido de la actividad */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  color: var(--text-color);
+  font-family: Georgia, serif;
+
+  display: flex; /* Usamos flexbox para que el contenido se distribuya */
+  flex-direction: column; /* Apila los elementos verticalmente */
+  flex-grow: 1; /* Permite que este contenedor ocupe todo el espacio disponible */
+  height: 100%; /* Asegura que ocupe el 100% de la altura de su padre (.activity-overlay-container) */
+  min-height: 0; /* Permite que el contenido se encoja si es necesario */
+  overflow-y: auto; /* Permite el scroll si el contenido es demasiado largo */
+
+  justify-content: flex-start; /* Alinea el contenido al inicio, no space-between */
+}
+
+.drag-drop-activity-content h3 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+}
+
+.sentence-line {
+  margin-bottom: 15px;
+  line-height: 1.2; /* Menos espacio entre líneas */
+  display: flex; /* Para alinear el texto y los blanks */
+  flex-wrap: wrap; /* Permitir que las oraciones se envuelvan */
+  align-items: center;
+  font-size: 1.3rem; /* <-- AÑADE ESTA LÍNEA */
+}
+
+.blank-spot {
+  display: inline-block;
+  min-width: 80px; /* Ancho mínimo para el blank */
+  height: 30px; /* Altura para el blank */
+  border-bottom: 2px dashed var(--blank-border-color);
+  margin: 0 5px;
+  text-align: center;
+  line-height: 30px;
+  font-weight: bold;
+  color: var(--text-color); /* Color del texto cuando se suelta */
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.blank-spot:hover {
+  background-color: var(--blank-hover-bg-color);
+}
+
+.blank-spot.incorrect-solution {
+  border-bottom: 2px dashed var(--blank-incorrect-color);
+  color: var(--blank-incorrect-color);
+}
+
+.blank-spot.correct-solution {
+  border-bottom: 2px solid var(--blank-correct-color);
+  color: var(--blank-correct-color);
+}
+
+/* En components/DragDropSentence.css */
+
+.check-button {
+  display: block;
+  margin: 2rem auto 0;
+  padding: 12px 25px;
+  background-color: var(
+    --button-primary-bg
+  ); /* Sigue siendo el fondo azul del botón */
+
+  /* CAMBIOS CLAVE: Usar variables CSS para el color del texto y el borde */
+  color: var(
+    --text-color
+  ); /* El texto del botón será el color de texto del tema (blanco en dark, negro en light) */
+  border: 1px solid var(--text-color); /* El borde del botón será el color de texto del tema */
+
+  border-radius: 5px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: auto;
+}
+
+.check-button:hover {
+  background-color: var(--button-primary-hover-bg);
+}
+
+/* No necesitas una regla @media específica para .check-button si usas las variables,
+   ya que el color y el borde se adaptarán automáticamente cuando html.dark-mode esté activo. */
+.activity-success-message {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 1.2rem;
+  color: var(--blank-correct-color);
+  font-weight: bold;
+  margin-top: auto;
+}
