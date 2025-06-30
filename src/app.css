@@ -1,6 +1,3 @@
-/* app.css - Versión Corregida y Mejorada */
-
-/* --- Reset básico y box-sizing --- */
 *,
 *::before,
 *::after {
@@ -19,7 +16,6 @@ body {
   overflow: hidden;
 }
 
-/* --- Variables CSS --- */
 html {
   --background-color: #fffbe6;
   --text-color: #333;
@@ -103,12 +99,10 @@ html.dark-mode {
   --word-hover-color: #58a6ff;
 }
 
-/* --- Clases de utilidad --- */
 .hidden {
   display: none !important;
 }
 
-/* --- Estilos de Layout y Contenedores Principales --- */
 .app-container {
   padding: 1rem;
   height: 100vh;
@@ -118,7 +112,7 @@ html.dark-mode {
   overflow: hidden;
 }
 .app-container-blur {
-  filter: blur(8px); /* Reducido el blur para mejor estética */
+  filter: blur(8px);
   transition: filter 0.5s ease-in-out;
 }
 .top-button-bar {
@@ -357,7 +351,6 @@ html.dark-mode .scene-image {
   min-height: 0;
 }
 
-/* --- AÑADIDO: Estilos estructurales para TODOS los modales --- */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -381,7 +374,6 @@ html.dark-mode .scene-image {
   width: 90%;
   z-index: 2000;
 }
-/* ---------------------------------------------------------------- */
 
 .student-name-modal h2,
 .chapter-completion-modal h2 {
@@ -408,7 +400,7 @@ html.dark-mode .scene-image {
   color: var(--text-color);
 }
 .student-name-modal input[type='text'] {
-  width: 100%; /* Simplificado */
+  width: 100%;
   padding: 10px;
   border: 1px solid var(--modal-border, #ccc);
   border-radius: 4px;
@@ -667,23 +659,20 @@ html.dark-mode .page-number-top-right {
   color: var(--word-active-color);
   transition: color 0.3s ease-in-out;
 }
-
-/* --- Estilos para la Burbuja de Error Contextual --- */
-/* --- MODIFICADO: Hacemos que el contenedor se ajuste al texto --- */
 .sentence-line-container {
   position: relative;
-  display: inline-flex; /* Cambiado a inline-flex */
+  display: inline-flex;
   align-items: center;
   margin-bottom: 15px;
-  width: max-content; /* El contenedor solo será tan ancho como su contenido */
-  max-width: 100%; /* Pero no más ancho que su padre */
+  width: max-content;
+  max-width: 100%;
 }
 .error-bubble {
   position: absolute;
-  left: 100%; /* Ahora se posiciona al final del texto */
+  left: 100%;
   top: 50%;
   transform: translateY(-50%);
-  margin-left: 15px; /* Espacio entre el texto y la burbuja */
+  margin-left: 15px;
   padding: 8px 12px;
   background-color: var(--error-background);
   color: var(--error-message-color);
@@ -706,99 +695,15 @@ html.dark-mode .page-number-top-right {
   border-style: solid;
   border-color: transparent var(--error-border) transparent transparent;
 }
-/* --- AÑADIDO: Estilo para el botón "Play Scene" cuando está activo --- */
 button.play-scene-button-active {
-  background-color: var(
-    --show-activity-button-bg
-  ); /* El verde del botón de ejercicio */
-  border-color: var(
-    --show-activity-button-bg
-  ); /* Hacemos que el borde también sea verde */
-  color: white; /* Aseguramos que el texto sea blanco para buen contraste */
+  background-color: var(--show-activity-button-bg);
+  border-color: var(--show-activity-button-bg);
+  color: white;
 }
-
-/* Opcional: Un estilo para el hover del botón activo */
 button.play-scene-button-active:hover:not(:disabled) {
   background-color: var(--show-activity-button-hover-bg);
   border-color: var(--show-activity-button-hover-bg);
 }
-/* --- Estilos para el Ejercicio de Práctica --- */
-
-.practice-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.lives-container {
-  font-size: 1.2rem;
-}
-
-.sentence-display {
-  font-size: 1.8rem;
-  line-height: 2.5;
-  text-align: center;
-  padding: 2rem 0;
-}
-
-.error-option {
-  color: var(--word-active-color); /* Usamos el mismo rojo de antes */
-  font-weight: bold;
-  cursor: pointer;
-  padding: 2px 5px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-
-.error-option:hover {
-  background-color: rgba(
-    255,
-    0,
-    0,
-    0.1
-  ); /* Un leve fondo rojo al pasar el mouse */
-  border-radius: 10px;
-}
-/* app.css */
-
-.feedback-display {
-  text-align: center;
-  margin-top: 1rem;
-  font-size: 1rem;
-  font-weight: bold;
-  min-height: 24px; /* Para evitar que la interfaz salte */
-  color: var(--text-color);
-}
-/* --- Estilos para la Etapa de Corrección --- */
-
-.correction-input {
-  width: 120px; /* Ancho del campo de texto */
-  padding: 8px;
-  font-size: 1.6rem;
-  border: none;
-  border-bottom: 2px dashed var(--word-hover-color);
-  background-color: transparent;
-  color: var(--text-color);
-  text-align: center;
-}
-
-.correction-input:focus {
-  outline: none;
-  border-bottom-style: solid;
-}
-/* --- Estilos para el Ejercicio de Práctica --- */
-.practice-exercise-container {
-  padding: 2rem;
-  max-width: 70%;
-  margin: 2rem auto;
-  background-color: var(--sidebar-bg);
-  border: 1px solid var(--sidebar-border);
-  border-radius: 8px;
-}
-.practice-exercise-container .progress-bar-outer {
-  width: 100%; /* Anula el 'width: 120px' de la regla original */
-}
 .practice-header {
   display: flex;
   justify-content: space-between;
@@ -808,13 +713,6 @@ button.play-scene-button-active:hover:not(:disabled) {
 .lives-container {
   font-size: 1.2rem;
 }
-
-.instructions {
-  font-style: italic;
-  color: var(--text-color-muted);
-  font-size: 1.3rem;
-}
-
 .sentence-display {
   font-size: 1.8rem;
   line-height: 2.5;
@@ -831,43 +729,15 @@ button.play-scene-button-active:hover:not(:disabled) {
 }
 .error-option:hover {
   background-color: rgba(255, 0, 0, 0.1);
+  border-radius: 10px;
 }
-
-.answer-bank {
+.feedback-display {
   text-align: center;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background-color: rgba(0, 0, 0, 0.02);
-  border-radius: 15px;
-  /* La magia del efecto cristal */
-  background-color: rgba(0, 123, 255, 0.1); /* Un fondo azul muy transparente */
-  backdrop-filter: blur(10px); /* El filtro que desenfoca lo que está detrás */
-  -webkit-backdrop-filter: blur(10px); /* Para compatibilidad con Safari */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Un borde sutil que parece el filo de un cristal */
-}
-.answer-bank h3 {
-  margin-top: 0;
-  margin-bottom: 0.75rem;
-  color: var(--text-color);
+  margin-top: 1rem;
   font-size: 1rem;
-}
-.bank-words {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.bank-word {
-  padding: 5px 15px;
-  background-color: var(--background-color);
-  border: 1px dashed var(--button-default-border);
-  border-radius: 15px;
-  font-family: monospace;
-  font-size: 1.3rem;
-}
-
-.correction-form {
-  display: inline-block;
+  font-weight: bold;
+  min-height: 24px;
+  color: var(--text-color);
 }
 .correction-input {
   width: 150px;
@@ -883,6 +753,54 @@ button.play-scene-button-active:hover:not(:disabled) {
 .correction-input:focus {
   outline: 0;
   border-bottom-style: solid;
+}
+.practice-exercise-container {
+  padding: 2rem;
+  max-width: 70%;
+  margin: 2rem auto;
+  background-color: var(--sidebar-bg);
+  border: 1px solid var(--sidebar-border);
+  border-radius: 8px;
+}
+.practice-exercise-container .progress-bar-outer {
+  width: 100%;
+}
+.instructions {
+  font-style: italic;
+  color: var(--text-color-muted);
+  font-size: 1.3rem;
+}
+.answer-bank {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: rgba(0, 123, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+}
+.answer-bank h3 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: var(--text-color);
+  font-size: 1rem;
+}
+.bank-words {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+.bank-word {
+  padding: 5px 15px;
+  background-color: var(--background-color);
+  border: 1px dashed var(--button-default-border);
+  border-radius: 15px;
+  font-family: monospace;
+  font-size: 1.3rem;
+}
+.correction-form {
+  display: inline-block;
 }
 .check-answer-area {
   text-align: center;
@@ -903,7 +821,6 @@ button.play-scene-button-active:hover:not(:disabled) {
   min-height: 24px;
   color: rgba(144, 238, 144, 0.9);
 }
-/* --- Estilos para la Pantalla de Game Over --- */
 .game-over-overlay {
   position: fixed;
   top: 0;
@@ -915,9 +832,8 @@ button.play-scene-button-active:hover:not(:disabled) {
   justify-content: center;
   align-items: center;
   z-index: 3000;
-  animation: fadeInParticles 0.5s ease; /* Reutilizamos la animación de fade */
+  animation: fadeInParticles 0.5s ease;
 }
-
 .game-over-box {
   background-color: var(--modal-bg);
   padding: 40px;
@@ -925,18 +841,15 @@ button.play-scene-button-active:hover:not(:disabled) {
   text-align: center;
   color: var(--modal-text);
 }
-
 .game-over-box h2 {
   color: var(--word-active-color);
   font-size: 3rem;
   margin: 0;
 }
-
 .game-over-box p {
   margin: 1rem 0 2rem 0;
   font-size: 1.2rem;
 }
-
 .game-over-box button {
   padding: 12px 25px;
   font-size: 1.1rem;
@@ -946,28 +859,20 @@ button.play-scene-button-active:hover:not(:disabled) {
   border-radius: 5px;
   cursor: pointer;
 }
-
 .find_error {
   color: var(--show-activity-button-hover-bg);
 }
-/* --- Estilos para el nuevo layout del ejercicio --- */
-
-/* El nuevo contenedor superior para las vidas */
 .practice-top-bar {
   display: flex;
-  justify-content: flex-end; /* Alinea las vidas a la derecha */
+  justify-content: flex-end;
   margin-bottom: 0.5rem;
 }
-
-/* El título del tema, ahora centrado */
 .practice-topic-title {
   text-align: center;
   margin-bottom: 1rem;
 }
-
-/* Contenedor para la nueva barra de progreso */
 .progress-bar-container {
-  padding: 0 2rem; /* Espaciado para que no toque los bordes */
+  padding: 0 2rem;
   margin-bottom: 1.5rem;
   margin-top: 1rem;
 }
@@ -976,11 +881,10 @@ button.play-scene-button-active:hover:not(:disabled) {
   border-top: 1px solid var(--sidebar-border);
   padding-top: 1.5rem;
   display: flex;
-  flex-direction: column; /* Apila los botones verticalmente */
-  gap: 0.75rem; /* Espacio entre los botones */
+  flex-direction: column;
+  gap: 0.75rem;
   padding-bottom: 12px;
 }
-
 .review-links-container p {
   margin: 0 0 0.5rem 0;
   font-weight: bold;
@@ -1003,7 +907,6 @@ button.play-scene-button-active:hover:not(:disabled) {
   animation: highlightSelector 1s linear infinite alternate;
   box-shadow: 0 0 8px 4px #26e64a, 0 0 20px 6px #b6ffbb;
 }
-
 @keyframes highlightSelector {
   0% {
     filter: brightness(1.2);
