@@ -999,3 +999,18 @@ button.play-scene-button-active:hover:not(:disabled) {
 .review-links-container a:hover {
   background-color: var(--button-primary-hover-bg);
 }
+.chapter-selector-highlight {
+  animation: highlightSelector 1s linear infinite alternate;
+  box-shadow: 0 0 8px 4px #26e64a, 0 0 20px 6px #b6ffbb;
+}
+
+@keyframes highlightSelector {
+  0% {
+    filter: brightness(1.2);
+    border: 2px solid #26e64a;
+  }
+  100% {
+    filter: brightness(2);
+    border: 2px solid #26e64a;
+  }
+}

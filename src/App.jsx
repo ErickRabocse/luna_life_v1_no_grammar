@@ -1,28 +1,22 @@
-// App.jsx
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react'
 import Word from './Word'
 import { allChapters } from './data/chapters'
-import { allPracticeData } from './data/practice'
 import ChapterSelector from './components/ChapterSelector'
 import DragDropSentence from './components/DragDropSentence'
 import StudentNameModal from './components/StudentNameModal'
 import { ChapterCompletionModal } from './components/ChapterCompletionModal'
 import { AnimatePresence } from 'framer-motion'
-// --- IMPORTACIONES CORREGIDAS ---
 import { DndProvider, useDrag } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
-import { PracticeExercise } from './components/PracticeExercise' // Importa el componente del ejercicio
 import StarEffect from './components/StarEffect'
 import './app.css'
 
 const FONT_SIZES = ['1.2rem', '1.4rem', '1.6rem']
 const DEFAULT_FONT_SIZE_INDEX = 1
-const EFFECT_DURATION = 6000
 const NEXT_BUTTON_ANIM_DURATION = 3000
 const GLANCE_TIMER_SECONDS = 10
 
 function DraggableWord({ word, isUsed }) {
-  // useDrag ya se importa globalmente para App, no necesita reimportarse aquí si DraggableWord está en App.jsx
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'word',
     item: { word },
@@ -36,8 +30,7 @@ function DraggableWord({ word, isUsed }) {
       }`}
       style={{ opacity: isDragging ? 0.4 : 1 }}
     >
-      {' '}
-      {word}{' '}
+      {word}
     </span>
   )
 }
@@ -68,10 +61,10 @@ function App() {
     setIsGlanceTimerActive(false)
     setGlanceTimeRemaining(0)
     if (glanceTimerRef.current) clearInterval(glanceTimerRef.current)
-
     setPlacedWords(new Set())
     setIsScenePlaying(false)
   }, [])
+
   const [isPaused, setIsPaused] = useState(false)
   const [chapterIndex, setChapterIndex] = useState(0)
   const [sceneIndex, setSceneIndex] = useState(0)
@@ -92,9 +85,6 @@ function App() {
     useState(null)
   const [blurPage, setBlurPage] = useState(false)
   const [showStarEffect, setShowStarEffect] = useState(false)
-  const [showPractice, setShowPractice] = useState(false)
-  const [showPostPracticeModal, setShowPostPracticeModal] = useState(false) // <-- AÑADIR
-  const [finalScore, setFinalScore] = useState(0) // <-- AÑADIR
 
   const [glanceTimeRemaining, setGlanceTimeRemaining] = useState(0)
   const [isGlanceTimerActive, setIsGlanceTimerActive] = useState(false)
@@ -107,16 +97,10 @@ function App() {
   const currentActivityId = `${chapterIndex}-${sceneIndex}`
   const activityIsCompletedForCurrentScene =
     !!isActivityCompleted[currentActivityId]
-
-  // En App.jsx
   const [isScenePlaying, setIsScenePlaying] = useState(false)
-  const [readSentenceIndices, setReadSentenceIndices] = useState(new Set()) // <-- AÑADE ESTA LÍNEA
-  //...
-  const handlePracticeComplete = (finalLives) => {
-    setFinalScore(finalLives) // 1. Guarda la puntuación de corazones
-    setShowPractice(false) // 2. Oculta la vista del ejercicio
-    setShowPostPracticeModal(true) // 3. Muestra el nuevo modal de puntuación
-  }
+  const [readSentenceIndices, setReadSentenceIndices] = useState(new Set())
+  const [highlightChapterSelector, setHighlightChapterSelector] =
+    useState(false)
 
   const handleStudentNameSubmit = (nameFromModal, groupFromModal) => {
     setStudentName(nameFromModal)
@@ -124,7 +108,11 @@ function App() {
     localStorage.setItem('studentName', nameFromModal)
     localStorage.setItem('studentGroup', groupFromModal)
     setShowStudentNameModal(false)
-    setSessionStartTime(Date.now()) // ¡Aquí iniciamos el contador!
+    setSessionStartTime(Date.now())
+    if (chapterIndex === 0) {
+      setHighlightChapterSelector(true)
+      setTimeout(() => setHighlightChapterSelector(false), 5000)
+    }
   }
 
   const completedScenesInCurrentChapter = useMemo(() => {
@@ -141,6 +129,7 @@ function App() {
       return !sceneHasActivity || !!isActivityCompleted[activityId]
     }).length
   }, [currentChapter, chapterIndex, isActivityCompleted])
+
   const chapterProgress = useMemo(() => {
     if (!currentChapter || currentChapter.scenes.length === 0) return 0
     if (
@@ -154,8 +143,6 @@ function App() {
       (completedScenesInCurrentChapter / currentChapter.scenes.length) * 100
     return Math.min(100, progress)
   }, [currentChapter, chapterIndex, completedScenesInCurrentChapter])
-
-  // useEffect para windowSize y setWindowSize
 
   const showTwoColumnExerciseLayout =
     showActivity && hasActivity && !activityIsCompletedForCurrentScene
@@ -227,31 +214,20 @@ function App() {
     if (isScenePlaying) {
       setIsScenePlaying(false)
       setIsPaused(false)
-    } // Si el navegador está hablando, lo detenemos para empezar de nuevo.
+    }
     setReadSentenceIndices(new Set())
     if (speechSynthesis.speaking) {
       speechSynthesis.cancel()
     }
-
-    // Creamos un nuevo objeto de "enunciado" con la palabra que queremos decir.
     const utterance = new SpeechSynthesisUtterance(wordToSpeak)
-
-    // Le indicamos al navegador que el texto está en inglés (Estados Unidos).
-    // Esto es clave para que la pronunciación sea correcta.
     utterance.lang = 'en-US'
-    utterance.rate = 0.6 // <-- AÑADE ESTA LÍNEA
-
-    // Cuando el navegador comience a hablar, actualizamos el estado para resaltar la palabra.
+    utterance.rate = 0.6
     utterance.onstart = () => {
       setActiveWord(wordToSpeak)
     }
-
-    // Cuando termine de hablar, quitamos el resaltado.
     utterance.onend = () => {
       setActiveWord(null)
     }
-
-    // Le damos la orden al navegador para que hable.
     setTimeout(() => {
       speechSynthesis.speak(utterance)
     }, 150)
@@ -275,8 +251,6 @@ function App() {
     if (isScenePlaying || !currentScene || !currentScene.text) return
     setIsPaused(false)
     if (speechSynthesis.speaking) speechSynthesis.cancel()
-
-    // 1. Obtenemos un array con el texto de cada oración.
     const sentencesText = currentScene.text
       .reduce((acc, item) => {
         if (
@@ -290,15 +264,10 @@ function App() {
         return acc
       }, [])
       .map((sentence) => sentence.replace(/\s+([.,!?])/g, '$1'))
-
     if (sentencesText.length === 0) return
-
     setIsScenePlaying(true)
-    setReadSentenceIndices(new Set()) // Limpiamos resaltados anteriores
-
-    // 2. Creamos una función que sabe cómo reproducir la "siguiente" oración en la cola.
+    setReadSentenceIndices(new Set())
     const playNextSentence = (sentenceIndex) => {
-      // Si ya no hay más oraciones, terminamos.
       if (sentenceIndex >= sentencesText.length) {
         setIsScenePlaying(false)
         setIsPaused(false)
@@ -307,46 +276,31 @@ function App() {
         }, 1000)
         return
       }
-
-      // Resaltamos la oración que vamos a leer.
       setReadSentenceIndices((prev) => new Set(prev).add(sentenceIndex))
-
       const utterance = new SpeechSynthesisUtterance(
         sentencesText[sentenceIndex]
       )
       utterance.lang = 'en-US'
       utterance.rate = 0.65
-
-      // Cuando la oración termine, llamamos a esta misma función
-      // para la siguiente oración.
       utterance.onend = () => {
         playNextSentence(sentenceIndex + 1)
       }
-
-      // Introducimos la pausa y nos aseguramos de que SOLO aquí se llame a speak.
       setTimeout(() => {
         speechSynthesis.speak(utterance)
       }, 150)
     }
-
-    // 4. Empezamos la cadena llamando a la primera oración (índice 0).
     playNextSentence(0)
   }
-  // Nueva función para controlar Play/Pausa/Continuar
+
   const handlePlaybackToggle = () => {
-    // Caso 1: Si no se está reproduciendo nada, inicia la escena desde el principio.
     if (!isScenePlaying) {
       playFullScene()
       return
     }
-
-    // Caso 2: Si está en pausa, reanúdalo.
     if (isPaused) {
       speechSynthesis.resume()
       setIsPaused(false)
-    }
-    // Caso 3: Si está sonando, páusalo.
-    else {
+    } else {
       speechSynthesis.pause()
       setIsPaused(true)
     }
@@ -367,6 +321,14 @@ function App() {
     setSceneIndex(allChapters[prevCh].scenes.length - 1)
     resetViewAndTimer()
   }
+  const handleGoToFirstSceneOfChapter = () => {
+    setShowCongratulatoryModal(false)
+    setShowStarEffect(false)
+    setBlurPage(false)
+    setSceneIndex(0) // 👈 Te quedas en el capítulo actual pero en la primera página
+    resetViewAndTimer()
+  }
+
   const getGlobalSceneNumber = () => {
     if (chapterIndex === 0) return null
     let page = 0
@@ -428,28 +390,15 @@ function App() {
     }
   }
 
-  const handleProceedToNextChapter = () => {
+  const handleGoToIntro = () => {
     setShowCongratulatoryModal(false)
     setShowStarEffect(false)
     setBlurPage(false)
-
-    if (chapterIndex < allChapters.length - 1) {
-      const nextChapterIndex = chapterIndex + 1
-
-      setChapterIndex(nextChapterIndex)
-      setSceneIndex(0)
-      resetViewAndTimer()
-    }
+    setChapterIndex(0)
+    setSceneIndex(0)
+    resetViewAndTimer()
   }
-  // AÑADE ESTA NUEVA FUNCIÓN
-  const handleStartPractice = () => {
-    // Ocultamos el modal y los efectos de celebración
-    setShowCongratulatoryModal(false)
-    setShowStarEffect(false)
-    setBlurPage(false)
-    // Y activamos la vista de práctica
-    setShowPractice(true)
-  }
+
   useEffect(() => {
     if (isGlanceTimerActive && glanceTimeRemaining > 0) {
       glanceTimerRef.current = setInterval(() => {
@@ -465,6 +414,7 @@ function App() {
       if (glanceTimerRef.current) clearInterval(glanceTimerRef.current)
     }
   }, [isGlanceTimerActive, glanceTimeRemaining])
+
   const handleToggleActivityView = () => {
     if (activityIsCompletedForCurrentScene && !isShowingTextDuringActivity) {
       setShowActivity(false)
@@ -501,9 +451,8 @@ function App() {
   const nextSceneButtonDisabled =
     pageEffectsActive || currentSceneActivityIsPending
   const prevSceneButtonDisabled =
-    pageEffectsActive ||
-    (sceneIndex === 0 && chapterIndex === 0) ||
-    currentSceneActivityIsPending
+    pageEffectsActive || sceneIndex === 0 || currentSceneActivityIsPending
+
   const mainControlsDisabled = pageEffectsActive
   const glanceButtonDisabled =
     pageEffectsActive ||
@@ -528,27 +477,23 @@ function App() {
   ) {
     mainContentToRender = (
       <div className={`reading-view-layout glance-mode`}>
-        {' '}
         <img
           src={currentScene.image}
           alt={`Scene ${sceneIndex + 1} from Chapter ${
             currentChapter.title || 'Introduction'
           }`}
           className="scene-image"
-        />{' '}
+        />
         <div className="text-container">
-          {' '}
           <div style={{ marginBottom: '1rem' }}>
             {chapterIndex === 0 ? (
               <h1 className="main-book-title">{allChapters[0].title}</h1>
             ) : (
               <h2 className="chapter-title-main">{currentChapter.title}</h2>
             )}
-          </div>{' '}
+          </div>
           <div className="content-area-wrapper">
-            {' '}
             <div className="scrollable-text">
-              {' '}
               {(() => {
                 const sentences = []
                 let currentSentenceWords = []
@@ -568,8 +513,6 @@ function App() {
                   sentences.push(currentSentenceWords)
                 }
                 return sentences.map((sentenceData, sIndex) => {
-                  // Busca esta función dentro de tu JSX y reemplázala
-
                   return (
                     <span
                       key={sIndex}
@@ -577,7 +520,6 @@ function App() {
                         readSentenceIndices.has(sIndex) ? 'read-sentence' : ''
                       }`}
                     >
-                      {' '}
                       {sentenceData.map(
                         ({
                           word: textWord,
@@ -593,7 +535,6 @@ function App() {
                           ].includes(textWord)
                           return (
                             <span key={`${GAI}-${textWord}`}>
-                              {' '}
                               {isPunctuation ? (
                                 textWord
                               ) : (
@@ -605,48 +546,41 @@ function App() {
                                   onSpeak={speakWord}
                                   fontSize={currentFontSize}
                                 />
-                              )}{' '}
+                              )}
                             </span>
                           )
                         }
-                      )}{' '}
+                      )}
                     </span>
                   )
                 })
-              })()}{' '}
-            </div>{' '}
-          </div>{' '}
-        </div>{' '}
+              })()}
+            </div>
+          </div>
+        </div>
       </div>
     )
   } else if (showTwoColumnExerciseLayout) {
-    // Usando showTwoColumnExerciseLayout aquí
     mainContentToRender = (
       <div className="exercise-fullscreen-layout">
-        {' '}
         <div className="exercise-sidebar-left">
-          {' '}
           <h3>
-            {' '}
             {currentScene.activity?.instructions ||
-              'Instrucciones no disponibles.'}{' '}
-          </h3>{' '}
+              'Instrucciones no disponibles.'}
+          </h3>
           <div className="sidebar-word-bank">
-            {' '}
             <div className="word-options-area-sidebar">
-              {' '}
               {availableWords.map((word, index) => (
                 <DraggableWord
                   key={`${word}-${index}-bank`}
                   word={word}
                   isUsed={placedWords.has(word)}
                 />
-              ))}{' '}
-            </div>{' '}
-          </div>{' '}
+              ))}
+            </div>
+          </div>
           {!activityIsCompletedForCurrentScene && (
             <div className="activity-action-buttons-sidebar">
-              {' '}
               <button
                 onClick={() =>
                   dragDropSentenceRef.current?.triggerCheckAnswers()
@@ -654,28 +588,24 @@ function App() {
                 className="check-button"
                 disabled={checkButtonDisabledInSidebar}
               >
-                {' '}
-                Comprobar{' '}
-              </button>{' '}
+                Comprobar
+              </button>
               <button
                 onClick={handleToggleActivityView}
                 className="toggle-activity-view-button"
                 disabled={glanceButtonDisabled}
               >
-                {' '}
-                Ver Texto{' '}
-              </button>{' '}
+                Ver Texto
+              </button>
             </div>
-          )}{' '}
+          )}
           {isGlanceTimerActive && isShowingTextDuringActivity && (
             <p className="glance-timer-display">
-              {' '}
-              Volviendo al ejercicio en: {glanceTimeRemaining}s{' '}
+              Volviendo al ejercicio en: {glanceTimeRemaining}s
             </p>
-          )}{' '}
-        </div>{' '}
+          )}
+        </div>
         <div className="exercise-main-area-right">
-          {' '}
           {currentScene.activity &&
           currentScene.activity.sentences &&
           currentScene.activity.sentences.length > 0 ? (
@@ -695,37 +625,32 @@ function App() {
                 color: 'var(--text-color)',
               }}
             >
-              {' '}
-              Error: No se pueden cargar las oraciones del ejercicio.{' '}
+              Error: No se pueden cargar las oraciones del ejercicio.
             </div>
-          )}{' '}
-        </div>{' '}
+          )}
+        </div>
       </div>
     )
   } else {
     mainContentToRender = (
       <div className={`reading-view-layout`}>
-        {' '}
         <img
           src={currentScene.image}
           alt={`Scene ${sceneIndex + 1} from Chapter ${
             currentChapter.title || 'Introduction'
           }`}
           className={`scene-image`}
-        />{' '}
+        />
         <div className={`text-container`}>
-          {' '}
           <div style={{ marginBottom: '1rem' }}>
             {chapterIndex === 0 ? (
               <h1 className="main-book-title">{allChapters[0].title}</h1>
             ) : (
               <h2 className="chapter-title-main">{currentChapter.title}</h2>
             )}
-          </div>{' '}
+          </div>
           <div className="content-area-wrapper">
-            {' '}
             <div className={`scrollable-text`}>
-              {' '}
               {(() => {
                 const sentences = []
                 let currentSentenceWords = []
@@ -745,7 +670,6 @@ function App() {
                   sentences.push(currentSentenceWords)
                 }
                 return sentences.map((sentenceData, sIndex) => {
-                  // Busca esta función dentro de tu JSX y reemplázala
                   return (
                     <span
                       key={sIndex}
@@ -753,7 +677,6 @@ function App() {
                         readSentenceIndices.has(sIndex) ? 'read-sentence' : ''
                       }`}
                     >
-                      {' '}
                       {sentenceData.map(
                         ({
                           word: textWord,
@@ -769,7 +692,6 @@ function App() {
                           ].includes(textWord)
                           return (
                             <span key={`${GAI}-${textWord}`}>
-                              {' '}
                               {isPunctuation ? (
                                 textWord
                               ) : (
@@ -781,16 +703,16 @@ function App() {
                                   onSpeak={speakWord}
                                   fontSize={currentFontSize}
                                 />
-                              )}{' '}
+                              )}
                             </span>
                           )
                         }
-                      )}{' '}
+                      )}
                     </span>
                   )
                 })
-              })()}{' '}
-            </div>{' '}
+              })()}
+            </div>
             {hasActivity &&
               showActivity &&
               activityIsCompletedForCurrentScene &&
@@ -799,35 +721,24 @@ function App() {
                   className="activity-status-section"
                   style={{ marginTop: '1rem' }}
                 >
-                  {' '}
                   <p
                     style={{
                       color: 'var(--blank-correct-color)',
                       fontWeight: 'bold',
                     }}
                   >
-                    {' '}
-                    ¡Ejercicio completado!{' '}
-                  </p>{' '}
+                    ¡Ejercicio completado!
+                  </p>
                 </div>
-              )}{' '}
-          </div>{' '}
-        </div>{' '}
+              )}
+          </div>
+        </div>
       </div>
     )
   }
-  if (showPractice) {
-    return (
-      <PracticeExercise
-        practiceData={allPracticeData[chapterIndex]}
-        onPracticeComplete={handlePracticeComplete}
-      />
-    )
-  }
+
   return (
     <DndProvider backend={HTML5Backend}>
-      {' '}
-      {/* DndProvider AÑADIDO */}
       {showStudentNameModal && (
         <StudentNameModal
           onSubmit={handleStudentNameSubmit}
@@ -838,24 +749,8 @@ function App() {
       {showCongratulatoryModal && congratulatoryModalDetails && (
         <ChapterCompletionModal
           details={congratulatoryModalDetails}
-          onProceed={handleStartPractice} // <-- CAMBIO IMPORTANTE
-          buttonText={`Let's practice: ${allPracticeData[chapterIndex]?.topic}`}
-        />
-      )}
-      {showPostPracticeModal && (
-        <ChapterCompletionModal
-          details={{
-            // Le pasamos un título y mensaje personalizados
-            customTitle: `¡Ejercicio Completado!`,
-            customMessage: `Terminaste la práctica con ${finalScore} ❤️ restantes.`,
-            studentName: studentName, // <-- AÑADE ESTA LÍNEA
-          }}
-          // Al darle clic, cerramos este modal y avanzamos de capítulo
-          onProceed={() => {
-            setShowPostPracticeModal(false)
-            handleProceedToNextChapter()
-          }}
-          buttonText="Next Chapter"
+          onProceed={handleGoToFirstSceneOfChapter} // 👈 Usa la nueva función
+          buttonText="Review This Chapter"
         />
       )}
       {showStarEffect && (
@@ -863,7 +758,6 @@ function App() {
           onParticlesLoaded={() => setShowCongratulatoryModal(true)}
         />
       )}
-      {/* ----------------------------- */}
       <div
         className={`app-container ${blurPage ? 'app-container-blur' : ''}`}
         onClick={() => {
@@ -872,21 +766,20 @@ function App() {
       >
         <div className="top-button-bar">
           <div className="left-controls">
-            {' '}
             <button
               onClick={() => setDarkMode(!darkMode)}
               style={{ fontSize: '0.9rem', marginRight: '0.5rem' }}
               disabled={mainControlsDisabled}
             >
               {darkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
-            </button>{' '}
+            </button>
             <button
               onClick={() => setFontSizeIndex((prev) => Math.max(0, prev - 1))}
               style={{ marginRight: '0.25rem' }}
               disabled={fontSizeIndex === 0 || mainControlsDisabled}
             >
               A-
-            </button>{' '}
+            </button>
             <button
               onClick={() =>
                 setFontSizeIndex((prev) =>
@@ -897,37 +790,44 @@ function App() {
                 fontSizeIndex === FONT_SIZES.length - 1 || mainControlsDisabled
               }
             >
-              {' '}
-              A+{' '}
-            </button>{' '}
+              A+
+            </button>
             <ChapterSelector
               chapters={allChapters}
               chapterIndex={chapterIndex}
               setChapterIndex={handleChapterChange}
               isDisabled={chapterSelectorDisabled}
-            />{' '}
+              className={
+                highlightChapterSelector ? 'chapter-selector-highlight' : ''
+              }
+            />
+
             <button
-              onClick={handlePlaybackToggle} // <-- 1. CAMBIA EL ONCLICK
-              disabled={mainControlsDisabled} // Opcional: puedes simplificar el disabled
+              onClick={handlePlaybackToggle}
+              disabled={mainControlsDisabled}
               className={isScenePlaying ? 'play-scene-button-active' : ''}
             >
               {isPaused ? 'Continuar' : isScenePlaying ? 'Pause' : 'Play Scene'}
             </button>
           </div>
           <div className="right-indicators">
-            {' '}
             <div className="nav-buttons-top">
-              {' '}
-              <button
-                onClick={() => {
-                  if (sceneIndex > 0) handleSceneAdvance(-1)
-                  else if (chapterIndex > 0) handleGoToLastSceneOfPrevChapter()
-                }}
-                disabled={prevSceneButtonDisabled}
-              >
-                ⬅️ Previous
-              </button>{' '}
-              {!isLastSceneInChapter && (
+              {chapterIndex !== 0 && (
+                <button
+                  onClick={() => {
+                    if (sceneIndex > 0) handleSceneAdvance(-1)
+                    else if (chapterIndex > 0)
+                      handleGoToLastSceneOfPrevChapter()
+                  }}
+                  disabled={
+                    prevSceneButtonDisabled ||
+                    (chapterIndex === 1 && sceneIndex === 0)
+                  }
+                >
+                  ⬅️ Previous
+                </button>
+              )}
+              {!isLastSceneInChapter && chapterIndex !== 0 && (
                 <button
                   onClick={() => {
                     if (
@@ -941,23 +841,19 @@ function App() {
                   }
                   disabled={nextSceneButtonDisabled}
                 >
-                  {' '}
-                  Next Scene ➡️{' '}
+                  Next Scene ➡️
                 </button>
-              )}{' '}
-              {nextChapterAvailable && (
-                <button
-                  onClick={handleProceedToNextChapter}
-                  disabled={pageEffectsActive}
-                >
-                  👉 Next Chapter
+              )}
+              {nextChapterAvailable && chapterIndex !== 0 && (
+                <button onClick={handleGoToIntro} disabled={pageEffectsActive}>
+                  👉 Go to Introduction
                 </button>
-              )}{' '}
-            </div>{' '}
+              )}
+            </div>
+
             {chapterIndex > 0 && currentChapter && (
               <div className="chapter-progress-container">
                 <span className="chapter-progress-text">
-                  {' '}
                   Capítulo {chapterIndex}: {completedScenesInCurrentChapter}/
                   {currentChapter.scenes.length}
                 </span>
@@ -968,13 +864,12 @@ function App() {
                   ></div>
                 </div>
               </div>
-            )}{' '}
+            )}
             {getGlobalSceneNumber() && (
               <div className="page-number-top-right">
-                {' '}
                 Página {getGlobalSceneNumber()}
               </div>
-            )}{' '}
+            )}
           </div>
         </div>
         <AnimatePresence mode="wait">
@@ -985,20 +880,15 @@ function App() {
             {mainContentToRender}
           </div>
         </AnimatePresence>
-
         {hasActivity &&
           !showActivity &&
           !activityIsCompletedForCurrentScene && (
-            //...
             <button
               onClick={() => {
-                // 1. Detenemos cualquier voz que esté sonando.
                 speechSynthesis.cancel()
-                // 2. Reseteamos todos los estados relacionados con la reproducción de la escena.
                 setIsScenePlaying(false)
                 setIsPaused(false)
-                setReadSentenceIndices(new Set()) // Limpia el texto resaltado.
-                // 3. Continuamos con la lógica original de mostrar el ejercicio.
+                setReadSentenceIndices(new Set())
                 setShowActivity(true)
                 setIsShowingTextDuringActivity(false)
               }}
@@ -1011,7 +901,7 @@ function App() {
           <div className="activity-completed-indicator">
             <span role="img" aria-label="Completed">
               ✅
-            </span>{' '}
+            </span>
             Actividad Completada
           </div>
         )}
@@ -1033,8 +923,7 @@ function App() {
               }}
             >
               <p className="glance-timer-display">
-                {' '}
-                Volviendo al ejercicio en: {glanceTimeRemaining}s{' '}
+                Volviendo al ejercicio en: {glanceTimeRemaining}s
               </p>
             </div>
           )}

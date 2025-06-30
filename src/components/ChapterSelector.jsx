@@ -5,6 +5,8 @@ function ChapterSelector({
   chapterIndex,
   setChapterIndex,
   isDisabled,
+  className = "",
+
 }) {
   const handleChange = (event) => {
     if (!isDisabled) {
@@ -23,6 +25,7 @@ function ChapterSelector({
         value={chapterIndex}
         onChange={handleChange}
         disabled={isDisabled}
+        className={className}
       >
         {chapters.map((chapter, index) => (
           <option key={chapter.id} value={index}>
