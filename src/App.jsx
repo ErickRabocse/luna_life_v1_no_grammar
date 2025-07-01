@@ -8,6 +8,7 @@ import { ChapterCompletionModal } from './components/ChapterCompletionModal'
 import { AnimatePresence } from 'framer-motion'
 import { DndProvider, useDrag } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
+import { TouchBackend } from 'react-dnd-touch-backend'
 import StarEffect from './components/StarEffect'
 import './app.css'
 
@@ -33,6 +34,9 @@ function DraggableWord({ word, isUsed }) {
       {word}
     </span>
   )
+}
+function isTouchDevice() {
+  return 'ontouchstart' in window || navigator.maxTouchPoints > 0
 }
 
 function App() {
@@ -738,7 +742,7 @@ function App() {
   }
 
   return (
-    <DndProvider backend={HTML5Backend}>
+    <DndProvider backend={isTouchDevice() ? TouchBackend : HTML5Backend}>
       {showStudentNameModal && (
         <StudentNameModal
           onSubmit={handleStudentNameSubmit}
