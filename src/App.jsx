@@ -38,6 +38,7 @@ function DraggableWord({ word, isUsed }) {
 function isTouchDevice() {
   return 'ontouchstart' in window || navigator.maxTouchPoints > 0
 }
+const touchDevice = isTouchDevice()
 
 function App() {
   useEffect(() => {
@@ -742,7 +743,12 @@ function App() {
   }
 
   return (
-    <DndProvider backend={isTouchDevice() ? TouchBackend : HTML5Backend}>
+    <DndProvider
+      backend={touchDevice ? TouchBackend : HTML5Backend}
+      {...(isTouchDevice() && {
+        options: { enableMouseEvents: true, delayTouchStart: 100 },
+      })}
+    >
       {showStudentNameModal && (
         <StudentNameModal
           onSubmit={handleStudentNameSubmit}
