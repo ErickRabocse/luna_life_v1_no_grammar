@@ -924,3 +924,19 @@ button.play-scene-button-active:hover:not(:disabled) {
   cursor: grabbing;
   z-index: 1000;
 }
+.glance-timer-inline {
+  margin-right: 4rem;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--word-active-color, #b81414);
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.15em 0.7em;
+  border-radius: 8px;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  transition: background 0.3s;
+}
+html.dark-mode .glance-timer-inline {
+  background: rgba(34, 34, 34, 0.25);
+  color: #ff5e57;
+}

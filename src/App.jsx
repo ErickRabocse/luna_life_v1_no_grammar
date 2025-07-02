@@ -303,7 +303,7 @@ function App() {
       .reduce((acc, item) => {
         if (
           !acc.length ||
-          ['.', '!', '?'].includes(acc[acc.length - 1].slice(-1))
+          ['.', ',', '!', '?'].includes(acc[acc.length - 1].slice(-1))
         ) {
           acc.push(item.word)
         } else {
@@ -582,7 +582,23 @@ function App() {
             {chapterIndex === 0 ? (
               <h1 className="main-book-title">{allChapters[0].title}</h1>
             ) : (
-              <h2 className="chapter-title-main">{currentChapter.title}</h2>
+              <h2
+                className="chapter-title-main"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                {currentChapter.title}
+                {isGlanceTimerActive &&
+                  isShowingTextDuringActivity &&
+                  activityModeIsActive && (
+                    <span className="glance-timer-inline">
+                      Volviendo al ejercicio en: {glanceTimeRemaining}s
+                    </span>
+                  )}
+              </h2>
             )}
           </div>
           <div className="content-area-wrapper">
@@ -593,7 +609,7 @@ function App() {
                 ;(currentScene?.text || []).forEach((item, idx) => {
                   currentSentenceWords.push({ ...item, globalArrIndex: idx })
                   if (
-                    ['.', '!', '?'].includes(item.word) ||
+                    ['.', ',', '!', '?'].includes(item.word) ||
                     idx === (currentScene.text?.length || 0) - 1
                   ) {
                     if (currentSentenceWords.length > 0) {
@@ -750,7 +766,7 @@ function App() {
                 ;(currentScene?.text || []).forEach((item, idx) => {
                   currentSentenceWords.push({ ...item, globalArrIndex: idx })
                   if (
-                    ['.', '!', '?'].includes(item.word) ||
+                    ['.', ',', '!', '?'].includes(item.word) ||
                     idx === (currentScene.text?.length || 0) - 1
                   ) {
                     if (currentSentenceWords.length > 0) {
@@ -1065,28 +1081,6 @@ function App() {
             Actividad Completada
           </div>
         )}
-        {isGlanceTimerActive &&
-          isShowingTextDuringActivity &&
-          activityModeIsActive && (
-            <div
-              className="activity-status-section"
-              style={{
-                position: 'fixed',
-                bottom: '10px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                zIndex: 1001,
-                background: 'var(--sidebar-bg)',
-                padding: '5px 10px',
-                borderRadius: '5px',
-                boxShadow: '0 0 10px rgba(0,0,0,0.2)',
-              }}
-            >
-              <p className="glance-timer-display">
-                Volviendo al ejercicio en: {glanceTimeRemaining}s
-              </p>
-            </div>
-          )}
       </div>
     </DndProvider>
   )
