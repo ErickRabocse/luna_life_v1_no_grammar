@@ -917,3 +917,10 @@ button.play-scene-button-active:hover:not(:disabled) {
     border: 2px solid #26e64a;
   }
 }
+.draggable-word-fixed.is-dragging {
+  opacity: 0.5;
+  background: rgba(66, 135, 245, 0.18);
+  box-shadow: 0 0 16px 4px #4287f5;
+  cursor: grabbing;
+  z-index: 1000;
+}

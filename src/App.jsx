@@ -10,6 +10,7 @@ import { DndProvider, useDrag } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { TouchBackend } from 'react-dnd-touch-backend'
 import StarEffect from './components/StarEffect'
+import CustomDragLayer from './components/CustomDragLayer' // o donde lo guardes
 import './app.css'
 
 const FONT_SIZES = ['1.2rem', '1.4rem', '1.6rem']
@@ -17,24 +18,48 @@ const DEFAULT_FONT_SIZE_INDEX = 1
 const NEXT_BUTTON_ANIM_DURATION = 3000
 const GLANCE_TIMER_SECONDS = 10
 
+const ACCESS_CODES = {
+  master: 'HORIZONBLUE', // clave para desbloquear TODO el libro
+  chapters: [
+    'TWISTER', // Capítulo 1
+    'CLOUDS', // Capítulo 2
+    'MOON', // Capítulo 3
+    'ECHO', // Capítulo 4
+    'FOX', // Capítulo 5
+    'SILK', // Capítulo 6
+    'HILL', // Capítulo 7
+    'IRIS', // Capítulo 8
+  ],
+}
+
 function DraggableWord({ word, isUsed }) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'word',
     item: { word },
-    collect: (monitor) => ({ isDragging: monitor.isDragging() }),
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
   }))
+
   return (
     <span
       ref={drag}
       className={`draggable-word-fixed ${isDragging ? 'is-dragging' : ''} ${
         isUsed ? 'used-in-bank' : ''
       }`}
-      style={{ opacity: isDragging ? 0.4 : 1 }}
+      style={{
+        opacity: isDragging ? 0.5 : 1,
+        background: isDragging ? 'rgba(66, 135, 245, 0.2)' : '',
+        boxShadow: isDragging ? '0 0 16px 3px #4287f5' : '',
+        cursor: isDragging ? 'grabbing' : 'grab',
+        transition: 'box-shadow 0.15s, background 0.15s, opacity 0.15s',
+      }}
     >
       {word}
     </span>
   )
 }
+
 function isTouchDevice() {
   return 'ontouchstart' in window || navigator.maxTouchPoints > 0
 }
@@ -110,8 +135,6 @@ function App() {
   const handleStudentNameSubmit = (nameFromModal, groupFromModal) => {
     setStudentName(nameFromModal)
     setStudentGroup(groupFromModal)
-    localStorage.setItem('studentName', nameFromModal)
-    localStorage.setItem('studentGroup', groupFromModal)
     setShowStudentNameModal(false)
     setSessionStartTime(Date.now())
     if (chapterIndex === 0) {
@@ -120,8 +143,23 @@ function App() {
     }
   }
 
+  const [unlockedChapters, setUnlockedChapters] = useState([0]) // 0 = Introducción desbloqueada siempre
+  const [hasMasterAccess, setHasMasterAccess] = useState(false)
+
+  const isLastSceneOfLastChapter =
+    hasMasterAccess &&
+    chapterIndex === allChapters.length - 1 &&
+    sceneIndex === allChapters[allChapters.length - 1].scenes.length - 1
+
   const completedScenesInCurrentChapter = useMemo(() => {
     if (!currentChapter) return 0
+
+    // Si está desbloqueado, cuenta TODAS las escenas como completas
+    if (hasMasterAccess) {
+      return currentChapter.scenes.length
+    }
+
+    // Lógica original para modo con ejercicios
     return currentChapter.scenes.filter((scene, idx) => {
       const activityId = `${chapterIndex}-${idx}`
       if (
@@ -133,21 +171,26 @@ function App() {
       const sceneHasActivity = scene.activity !== undefined
       return !sceneHasActivity || !!isActivityCompleted[activityId]
     }).length
-  }, [currentChapter, chapterIndex, isActivityCompleted])
+  }, [currentChapter, chapterIndex, isActivityCompleted, hasMasterAccess])
 
   const chapterProgress = useMemo(() => {
     if (!currentChapter || currentChapter.scenes.length === 0) return 0
-    if (
-      chapterIndex === 0 &&
-      currentChapter.scenes.length === 1 &&
-      !currentChapter.scenes.some((s) => s.activity)
-    ) {
-      return 100
+
+    if (hasMasterAccess) {
+      // Progreso según la escena actual
+      return ((sceneIndex + 1) / currentChapter.scenes.length) * 100
     }
+
+    // Lógica normal para modo con actividades
     const progress =
       (completedScenesInCurrentChapter / currentChapter.scenes.length) * 100
     return Math.min(100, progress)
-  }, [currentChapter, chapterIndex, completedScenesInCurrentChapter])
+  }, [
+    currentChapter,
+    completedScenesInCurrentChapter,
+    hasMasterAccess,
+    sceneIndex, // 👈 importante agregar para que recalcule al cambiar de página
+  ])
 
   const showTwoColumnExerciseLayout =
     showActivity && hasActivity && !activityIsCompletedForCurrentScene
@@ -312,10 +355,47 @@ function App() {
   }
 
   const handleChapterChange = (newIndex) => {
-    setChapterIndex(newIndex)
-    setSceneIndex(0)
-    resetViewAndTimer()
+    if (hasMasterAccess || unlockedChapters.includes(newIndex)) {
+      setChapterIndex(newIndex)
+      setSceneIndex(0)
+      resetViewAndTimer()
+      return
+    }
+
+    // Si no está desbloqueado, pide el código
+    const code = window.prompt(
+      'This chapter is protected. Please enter the access code provided by your teacher:'
+    )
+    if (!code) return // Cancelado
+
+    const codeUpper = code.trim().toUpperCase()
+
+    if (codeUpper === ACCESS_CODES.master) {
+      setHasMasterAccess(true)
+      setUnlockedChapters([...Array(ACCESS_CODES.chapters.length + 1).keys()]) // Desbloquea todos los capítulos (incluye introducción)
+      setChapterIndex(newIndex)
+      setSceneIndex(0)
+      resetViewAndTimer()
+      return
+    }
+
+    if (
+      newIndex > 0 &&
+      ACCESS_CODES.chapters[newIndex - 1] &&
+      codeUpper === ACCESS_CODES.chapters[newIndex - 1]
+    ) {
+      setUnlockedChapters((prev) =>
+        prev.includes(newIndex) ? prev : [...prev, newIndex]
+      )
+      setChapterIndex(newIndex)
+      setSceneIndex(0)
+      resetViewAndTimer()
+      return
+    }
+
+    alert('Invalid access code. Please check with your teacher.')
   }
+
   const handleSceneAdvance = (offset) => {
     setSceneIndex((prev) => prev + offset)
     resetViewAndTimer()
@@ -449,14 +529,22 @@ function App() {
   const activityModeIsActive =
     showActivity && hasActivity && !activityIsCompletedForCurrentScene
 
+  const canShowNextChapterButton =
+    hasMasterAccess &&
+    isLastSceneInChapter &&
+    chapterIndex < allChapters.length - 1
+
   const chapterSelectorDisabled =
-    pageEffectsActive ||
-    currentSceneActivityIsPending ||
-    (activityModeIsActive && isGlanceTimerActive)
+    !hasMasterAccess &&
+    (pageEffectsActive ||
+      currentSceneActivityIsPending ||
+      (activityModeIsActive && isGlanceTimerActive))
+
   const nextSceneButtonDisabled =
-    pageEffectsActive || currentSceneActivityIsPending
+    !hasMasterAccess && (pageEffectsActive || currentSceneActivityIsPending)
   const prevSceneButtonDisabled =
-    pageEffectsActive || sceneIndex === 0 || currentSceneActivityIsPending
+    !hasMasterAccess &&
+    (pageEffectsActive || sceneIndex === 0 || currentSceneActivityIsPending)
 
   const mainControlsDisabled = pageEffectsActive
   const glanceButtonDisabled =
@@ -565,7 +653,7 @@ function App() {
         </div>
       </div>
     )
-  } else if (showTwoColumnExerciseLayout) {
+  } else if (showTwoColumnExerciseLayout && !hasMasterAccess) {
     mainContentToRender = (
       <div className="exercise-fullscreen-layout">
         <div className="exercise-sidebar-left">
@@ -749,6 +837,7 @@ function App() {
         options: { enableMouseEvents: true, delayTouchStart: 100 },
       })}
     >
+      <CustomDragLayer />
       {showStudentNameModal && (
         <StudentNameModal
           onSubmit={handleStudentNameSubmit}
@@ -822,6 +911,7 @@ function App() {
           </div>
           <div className="right-indicators">
             <div className="nav-buttons-top">
+              {/* Previous */}
               {chapterIndex !== 0 && (
                 <button
                   onClick={() => {
@@ -837,28 +927,86 @@ function App() {
                   ⬅️ Previous
                 </button>
               )}
-              {!isLastSceneInChapter && chapterIndex !== 0 && (
+
+              {/* ULTIMA ESCENA DEL ULTIMO CAPITULO: Mensaje especial */}
+              {isLastSceneOfLastChapter ? (
+                <button
+                  onClick={handleGoToIntro}
+                  className="next-chapter-button-special"
+                  style={{
+                    background:
+                      'linear-gradient(320deg, #4364f7 75%, #fbc7d4 100%)',
+                    color: 'white',
+                    fontWeight: 'bold',
+                    borderRadius: '2em',
+                    padding: '0.7em 2em',
+                    marginLeft: '1em',
+                    fontSize: '1.08em',
+                    letterSpacing: '0.04em',
+                    border: 'none',
+                  }}
+                >
+                  🌙 Congratulations, you have finished the story!
+                </button>
+              ) : canShowNextChapterButton ? (
+                // Si es la última escena de cualquier capítulo, pero no del último capítulo
                 <button
                   onClick={() => {
-                    if (
-                      currentChapter &&
-                      sceneIndex < currentChapter.scenes.length - 1
-                    )
-                      handleSceneAdvance(1)
+                    setChapterIndex(chapterIndex + 1)
+                    setSceneIndex(0)
+                    resetViewAndTimer()
                   }}
-                  className={
-                    animateNextSceneButton ? 'next-scene-button-animate' : ''
-                  }
-                  disabled={nextSceneButtonDisabled}
+                  className="next-chapter-button-special"
+                  style={{
+                    background:
+                      'linear-gradient(320deg, #4364f7 60%, #fbc7d4 100%)',
+                    color: 'white',
+                    fontWeight: 'bold',
+                    borderRadius: '2em',
+                    boxShadow: '0 4px 18px 2px rgba(42,80,186,0.20)',
+                    padding: '0.4em .5em',
+                    margin: '.5em',
+                    fontSize: '1.05em',
+                    letterSpacing: '0.03em',
+                    border: 'none',
+                    transition: 'transform 0.1s',
+                    transform: 'scale(1.07)',
+                  }}
                 >
-                  Next Scene ➡️
+                  🌙 Next Chapter
                 </button>
+              ) : (
+                // Next Scene solo si NO es la última escena
+                !isLastSceneInChapter &&
+                chapterIndex !== 0 && (
+                  <button
+                    onClick={() => {
+                      if (
+                        currentChapter &&
+                        sceneIndex < currentChapter.scenes.length - 1
+                      )
+                        handleSceneAdvance(1)
+                    }}
+                    className={
+                      animateNextSceneButton ? 'next-scene-button-animate' : ''
+                    }
+                    disabled={nextSceneButtonDisabled}
+                  >
+                    Next Scene ➡️
+                  </button>
+                )
               )}
-              {nextChapterAvailable && chapterIndex !== 0 && (
-                <button onClick={handleGoToIntro} disabled={pageEffectsActive}>
-                  👉 Go to Introduction
-                </button>
-              )}
+              {/* Go to Introduction */}
+              {nextChapterAvailable &&
+                chapterIndex !== 0 &&
+                !hasMasterAccess && (
+                  <button
+                    onClick={handleGoToIntro}
+                    disabled={pageEffectsActive}
+                  >
+                    👉 Go to Introduction
+                  </button>
+                )}
             </div>
 
             {chapterIndex > 0 && currentChapter && (
@@ -891,6 +1039,7 @@ function App() {
           </div>
         </AnimatePresence>
         {hasActivity &&
+          !hasMasterAccess && // 👈 Nueva condición, oculta ejercicios con master code
           !showActivity &&
           !activityIsCompletedForCurrentScene && (
             <button
@@ -907,6 +1056,7 @@ function App() {
               Show Exercise
             </button>
           )}
+
         {hasActivity && !showActivity && activityIsCompletedForCurrentScene && (
           <div className="activity-completed-indicator">
             <span role="img" aria-label="Completed">

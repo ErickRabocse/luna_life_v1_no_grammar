@@ -1,26 +1,24 @@
 // src/components/StudentNameModal.jsx
 import React, { useState } from 'react'
-// Podrías importar un CSS específico si lo deseas, ej: import './StudentNameModal.css';
-// O usar las clases globales de app.css para .modal-overlay y .modal-box
 
 function StudentNameModal({ onSubmit, currentName = '', currentGroup = '' }) {
   const [name, setName] = useState(currentName)
   const [group, setGroup] = useState(currentGroup)
+  const [error, setError] = useState('')
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (name.trim() && group.trim()) {
-      onSubmit(name.trim(), group.trim())
-    } else {
-      alert('Please enter both your full name and group.') // Alerta simple, puedes mejorar esto
+    if (!name.trim() || !group.trim()) {
+      setError('Please enter your full name and group.')
+      return
     }
+    setError('')
+    onSubmit(name.trim(), group.trim())
   }
 
   return (
     <div className="modal-overlay">
       <div className="modal-box student-name-modal">
-        {' '}
-        {/* Añadida clase específica */}
         <h2>Welcome!</h2>
         <p>Please enter your details to begin:</p>
         <form onSubmit={handleSubmit}>
@@ -46,6 +44,7 @@ function StudentNameModal({ onSubmit, currentName = '', currentGroup = '' }) {
               required
             />
           </div>
+          {error && <div className="modal-error">{error}</div>}
           <button type="submit" className="modal-submit-button">
             Start Learning
           </button>
