@@ -940,3 +940,25 @@ html.dark-mode .glance-timer-inline {
   background: rgba(34, 34, 34, 0.25);
   color: #ff5e57;
 }
+
+@media (max-width: 700px) {
+  .show-activity-button {
+    position: fixed !important;
+    left: 50% !important;
+    bottom: 18px !important;
+    transform: translateX(-50%) !important;
+    width: auto !important;
+    z-index: 9999 !important;
+    margin: 0 !important;
+    box-shadow: 0 4px 18px 3px #00000022 !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .app-container {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+    padding-bottom: 60px !important; /* Deja espacio para el botón */
+  }
+}
