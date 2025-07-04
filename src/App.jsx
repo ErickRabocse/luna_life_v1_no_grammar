@@ -883,16 +883,7 @@ function App() {
       >
         <div className="top-button-bar">
           {/* Fila principal: hamburguesa + capítulo + controles */}
-          <div
-            className="mobile-only mobile-bar-row"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '0.5em',
-              marginBottom: '0.12em',
-            }}
-          >
+          <div className="mobile-only mobile-bar-row">
             {/* Menú hamburguesa */}
             <div className="mobile-hamburger-menu" style={{ flex: '0 0 auto' }}>
               <button
@@ -932,15 +923,7 @@ function App() {
             </div>
 
             {/* Selector de capítulo */}
-            <div
-              className="mobile-chapter-selector"
-              style={{
-                flex: '1 1 auto',
-                minWidth: '100px',
-                marginLeft: '0.25em',
-                marginRight: '0.4em',
-              }}
-            >
+            <div className="mobile-chapter-selector">
               <ChapterSelector
                 chapters={allChapters}
                 chapterIndex={chapterIndex}
@@ -953,16 +936,7 @@ function App() {
             </div>
 
             {/* Botones navegación */}
-            <div
-              className="mobile-nav-buttons"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.22em',
-                flex: '0 0 auto',
-                marginRight: '0.3em',
-              }}
-            >
+            <div className="mobile-nav-buttons">
               <button
                 onClick={() => {
                   if (sceneIndex > 0) handleSceneAdvance(-1)
@@ -973,14 +947,8 @@ function App() {
                   (chapterIndex === 1 && sceneIndex === 0)
                 }
                 aria-label="Previous"
-                style={{
-                  fontSize: '1.18em',
-                  width: '2.0em',
-                  height: '2.0em',
-                  borderRadius: '0.7em',
-                }}
               >
-                ←
+                ⬅️
               </button>
               <button
                 onClick={handlePlaybackToggle}
@@ -994,7 +962,7 @@ function App() {
                   borderRadius: '0.7em',
                 }}
               >
-                ►
+                ▶️
               </button>
               <button
                 onClick={() => {
@@ -1016,52 +984,18 @@ function App() {
                   borderRadius: '0.7em',
                 }}
               >
-                →
+                ➡️
               </button>
             </div>
           </div>
 
           {/* Indicadores: capítulo a la izquierda, página a la derecha */}
-          <div
-            className="mobile-only mobile-indicators"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              width: '100%',
-              marginTop: '0.09em',
-              marginBottom: '0.13em',
-              padding: '0 0.22em',
-            }}
-          >
-            <span
-              className="mobile-chapter-indicator"
-              style={{
-                background: '#fff7db',
-                borderRadius: '0.7em',
-                padding: '0.18em 0.95em',
-                fontSize: '1.11em',
-                color: '#222',
-                border: '2px solid #e6bc6a',
-                boxShadow: '0 2px 7px #f3dfb3a0',
-              }}
-            >
+          <div className="mobile-only mobile-indicators">
+            <span className="mobile-chapter-indicator">
               Cap. {chapterIndex}
             </span>
             {getGlobalSceneNumber() && (
-              <span
-                className="mobile-page-badge"
-                style={{
-                  background: '#464646',
-                  color: '#fff',
-                  borderRadius: '0.6em',
-                  padding: '0.17em 1.03em',
-                  fontSize: '1.11em',
-                  fontWeight: 'bold',
-                  marginRight: '0.09em',
-                  boxShadow: '0 2px 7px #bbb3f3a0',
-                }}
-              >
+              <span className="mobile-page-badge">
                 P.{getGlobalSceneNumber()}
               </span>
             )}
