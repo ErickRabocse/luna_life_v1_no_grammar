@@ -95,6 +95,8 @@ function App() {
     setIsScenePlaying(false)
   }, [])
 
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
+
   const [isPaused, setIsPaused] = useState(false)
   const [chapterIndex, setChapterIndex] = useState(0)
   const [sceneIndex, setSceneIndex] = useState(0)
@@ -880,7 +882,193 @@ function App() {
         }}
       >
         <div className="top-button-bar">
-          <div className="left-controls">
+          {/* Fila principal: hamburguesa + capítulo + controles */}
+          <div
+            className="mobile-only mobile-bar-row"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '0.5em',
+              marginBottom: '0.12em',
+            }}
+          >
+            {/* Menú hamburguesa */}
+            <div className="mobile-hamburger-menu" style={{ flex: '0 0 auto' }}>
+              <button
+                className="hamburger-icon"
+                onClick={() => setShowMobileMenu((m) => !m)}
+                style={{
+                  fontSize: '1.6em',
+                  padding: '0.12em 0.38em',
+                  marginLeft: '0.1em',
+                }}
+              >
+                ☰
+              </button>
+              {showMobileMenu && (
+                <div className="mobile-dropdown">
+                  <button onClick={() => setDarkMode(!darkMode)}>
+                    {darkMode ? '☀️ Light' : '🌙 Dark'}
+                  </button>
+                  <button
+                    onClick={() =>
+                      setFontSizeIndex((prev) => Math.max(0, prev - 1))
+                    }
+                  >
+                    A-
+                  </button>
+                  <button
+                    onClick={() =>
+                      setFontSizeIndex((prev) =>
+                        Math.min(FONT_SIZES.length - 1, prev + 1)
+                      )
+                    }
+                  >
+                    A+
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Selector de capítulo */}
+            <div
+              className="mobile-chapter-selector"
+              style={{
+                flex: '1 1 auto',
+                minWidth: '100px',
+                marginLeft: '0.25em',
+                marginRight: '0.4em',
+              }}
+            >
+              <ChapterSelector
+                chapters={allChapters}
+                chapterIndex={chapterIndex}
+                setChapterIndex={handleChapterChange}
+                isDisabled={chapterSelectorDisabled}
+                className={
+                  highlightChapterSelector ? 'chapter-selector-highlight' : ''
+                }
+              />
+            </div>
+
+            {/* Botones navegación */}
+            <div
+              className="mobile-nav-buttons"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.22em',
+                flex: '0 0 auto',
+                marginRight: '0.3em',
+              }}
+            >
+              <button
+                onClick={() => {
+                  if (sceneIndex > 0) handleSceneAdvance(-1)
+                  else if (chapterIndex > 0) handleGoToLastSceneOfPrevChapter()
+                }}
+                disabled={
+                  prevSceneButtonDisabled ||
+                  (chapterIndex === 1 && sceneIndex === 0)
+                }
+                aria-label="Previous"
+                style={{
+                  fontSize: '1.18em',
+                  width: '2.0em',
+                  height: '2.0em',
+                  borderRadius: '0.7em',
+                }}
+              >
+                ←
+              </button>
+              <button
+                onClick={handlePlaybackToggle}
+                disabled={mainControlsDisabled}
+                className={isScenePlaying ? 'play-scene-button-active' : ''}
+                aria-label="Play Scene"
+                style={{
+                  fontSize: '1.18em',
+                  width: '2.0em',
+                  height: '2.0em',
+                  borderRadius: '0.7em',
+                }}
+              >
+                ►
+              </button>
+              <button
+                onClick={() => {
+                  if (
+                    currentChapter &&
+                    sceneIndex < currentChapter.scenes.length - 1
+                  )
+                    handleSceneAdvance(1)
+                }}
+                className={
+                  animateNextSceneButton ? 'next-scene-button-animate' : ''
+                }
+                disabled={nextSceneButtonDisabled}
+                aria-label="Next"
+                style={{
+                  fontSize: '1.18em',
+                  width: '2.0em',
+                  height: '2.0em',
+                  borderRadius: '0.7em',
+                }}
+              >
+                →
+              </button>
+            </div>
+          </div>
+
+          {/* Indicadores: capítulo a la izquierda, página a la derecha */}
+          <div
+            className="mobile-only mobile-indicators"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: '100%',
+              marginTop: '0.09em',
+              marginBottom: '0.13em',
+              padding: '0 0.22em',
+            }}
+          >
+            <span
+              className="mobile-chapter-indicator"
+              style={{
+                background: '#fff7db',
+                borderRadius: '0.7em',
+                padding: '0.18em 0.95em',
+                fontSize: '1.11em',
+                color: '#222',
+                border: '2px solid #e6bc6a',
+                boxShadow: '0 2px 7px #f3dfb3a0',
+              }}
+            >
+              Cap. {chapterIndex}
+            </span>
+            {getGlobalSceneNumber() && (
+              <span
+                className="mobile-page-badge"
+                style={{
+                  background: '#464646',
+                  color: '#fff',
+                  borderRadius: '0.6em',
+                  padding: '0.17em 1.03em',
+                  fontSize: '1.11em',
+                  fontWeight: 'bold',
+                  marginRight: '0.09em',
+                  boxShadow: '0 2px 7px #bbb3f3a0',
+                }}
+              >
+                P.{getGlobalSceneNumber()}
+              </span>
+            )}
+          </div>
+
+          {/* Controles y capítulos solo en desktop */}
+          <div className="desktop-only left-controls">
             <button
               onClick={() => setDarkMode(!darkMode)}
               style={{ fontSize: '0.9rem', marginRight: '0.5rem' }}
@@ -916,7 +1104,6 @@ function App() {
                 highlightChapterSelector ? 'chapter-selector-highlight' : ''
               }
             />
-
             <button
               onClick={handlePlaybackToggle}
               disabled={mainControlsDisabled}
@@ -925,9 +1112,9 @@ function App() {
               {isPaused ? 'Continuar' : isScenePlaying ? 'Pause' : 'Play Scene'}
             </button>
           </div>
-          <div className="right-indicators">
+
+          <div className="desktop-only right-indicators">
             <div className="nav-buttons-top">
-              {/* Previous */}
               {chapterIndex !== 0 && (
                 <button
                   onClick={() => {
@@ -944,7 +1131,6 @@ function App() {
                 </button>
               )}
 
-              {/* ULTIMA ESCENA DEL ULTIMO CAPITULO: Mensaje especial */}
               {isLastSceneOfLastChapter ? (
                 <button
                   onClick={handleGoToIntro}
@@ -965,7 +1151,6 @@ function App() {
                   🌙 Congratulations, you have finished the story!
                 </button>
               ) : canShowNextChapterButton ? (
-                // Si es la última escena de cualquier capítulo, pero no del último capítulo
                 <button
                   onClick={() => {
                     setChapterIndex(chapterIndex + 1)
@@ -992,7 +1177,6 @@ function App() {
                   🌙 Next Chapter
                 </button>
               ) : (
-                // Next Scene solo si NO es la última escena
                 !isLastSceneInChapter &&
                 chapterIndex !== 0 && (
                   <button
@@ -1012,7 +1196,6 @@ function App() {
                   </button>
                 )
               )}
-              {/* Go to Introduction */}
               {nextChapterAvailable &&
                 chapterIndex !== 0 &&
                 !hasMasterAccess && (
@@ -1046,6 +1229,7 @@ function App() {
             )}
           </div>
         </div>
+
         <AnimatePresence mode="wait">
           <div
             key={`${chapterIndex}-${sceneIndex}-${showActivity}-${isShowingTextDuringActivity}-${isGlanceTimerActive}`}
