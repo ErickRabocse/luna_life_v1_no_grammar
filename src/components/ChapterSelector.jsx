@@ -5,8 +5,7 @@ function ChapterSelector({
   chapterIndex,
   setChapterIndex,
   isDisabled,
-  className = "",
-
+  className = '',
 }) {
   const handleChange = (event) => {
     if (!isDisabled) {

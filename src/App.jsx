@@ -953,16 +953,11 @@ function App() {
               <button
                 onClick={handlePlaybackToggle}
                 disabled={mainControlsDisabled}
-                className={isScenePlaying ? 'play-scene-button-active' : ''}
-                aria-label="Play Scene"
-                style={{
-                  fontSize: '1.18em',
-                  width: '2.0em',
-                  height: '2.0em',
-                  borderRadius: '0.7em',
-                }}
+                className={
+                  isScenePlaying ? 'play-scene-button-active-mobile' : ''
+                }
               >
-                ▶️
+                {isPaused ? '▶️' : isScenePlaying ? ' ⏸️' : '▶️'}
               </button>
               <button
                 onClick={() => {
@@ -977,12 +972,6 @@ function App() {
                 }
                 disabled={nextSceneButtonDisabled}
                 aria-label="Next"
-                style={{
-                  fontSize: '1.18em',
-                  width: '2.0em',
-                  height: '2.0em',
-                  borderRadius: '0.7em',
-                }}
               >
                 ➡️
               </button>
