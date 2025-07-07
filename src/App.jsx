@@ -122,6 +122,8 @@ function App() {
   const [isGlanceTimerActive, setIsGlanceTimerActive] = useState(false)
   const glanceTimerRef = useRef(null)
   const dragDropSentenceRef = useRef(null)
+  const menuRef = useRef(null)
+
   const [sessionStartTime, setSessionStartTime] = useState(null)
   const currentChapter = allChapters[chapterIndex]
   const currentScene = currentChapter?.scenes[sceneIndex]
@@ -133,6 +135,22 @@ function App() {
   const [readSentenceIndices, setReadSentenceIndices] = useState(new Set())
   const [highlightChapterSelector, setHighlightChapterSelector] =
     useState(false)
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMobileMenu(false)
+      }
+    }
+    if (showMobileMenu) {
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('touchstart', handleClickOutside)
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside)
+    }
+  }, [showMobileMenu])
 
   const handleStudentNameSubmit = (nameFromModal, groupFromModal) => {
     setStudentName(nameFromModal)
@@ -196,6 +214,14 @@ function App() {
 
   const showTwoColumnExerciseLayout =
     showActivity && hasActivity && !activityIsCompletedForCurrentScene
+
+  useEffect(() => {
+    let timer
+    if (showMobileMenu) {
+      timer = setTimeout(() => setShowMobileMenu(false), 5000)
+    }
+    return () => clearTimeout(timer)
+  }, [showMobileMenu])
 
   useEffect(() => {
     setIsShowingTextDuringActivity(false)
@@ -675,7 +701,7 @@ function App() {
     mainContentToRender = (
       <div className="exercise-fullscreen-layout">
         <div className="exercise-sidebar-left">
-          <h3>
+          <h3 className="instructions-header-sidebar">
             {currentScene.activity?.instructions ||
               'Instrucciones no disponibles.'}
           </h3>
@@ -885,7 +911,11 @@ function App() {
           {/* Fila principal: hamburguesa + capítulo + controles */}
           <div className="mobile-only mobile-bar-row">
             {/* Menú hamburguesa */}
-            <div className="mobile-hamburger-menu" style={{ flex: '0 0 auto' }}>
+            <div
+              className="mobile-hamburger-menu"
+              ref={menuRef}
+              style={{ flex: '0 0 auto' }}
+            >
               <button
                 className="hamburger-icon"
                 onClick={() => setShowMobileMenu((m) => !m)}

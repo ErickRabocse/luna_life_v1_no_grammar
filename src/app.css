@@ -33,8 +33,7 @@ html {
   --show-activity-button-bg: #28a745;
   --show-activity-button-hover-bg: #218838;
 
-  --show-activity-button-bg-mobile: pink;
-  --show-activity-button-hover-bg-mobile: pink;
+  --show-activity-button-hover-bg-mobile: rgb(100, 153, 156);
 
   --toggle-activity-view-button-bg: #6c757d;
   --toggle-activity-view-button-text: white;
@@ -77,8 +76,6 @@ html.dark-mode {
   --play-button-hover-bg: #444;
   --show-activity-button-bg: #4caf50;
   --show-activity-button-hover-bg: #45a049;
-
-  --dark-mode-toggle: pink;
 
   --toggle-activity-view-button-bg: #5a6268;
   --toggle-activity-view-button-hover-bg: #495057;
@@ -994,7 +991,7 @@ html.dark-mode .glance-timer-inline {
     width: 100%;
     min-height: unset;
   }
-  .mobile-bar-row {
+  /* .mobile-bar-row {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -1003,7 +1000,19 @@ html.dark-mode .glance-timer-inline {
     padding: 0;
     margin: 0;
     gap: 0.4rem;
+  } */
+  .mobile-bar-row {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1002; /* más alto que el resto del contenido */
+    background: var(--background-color);
+    box-shadow: 0 2px 8px 0 #0001;
+    width: 100vw;
+    padding: 0.2rem 0.3rem;
   }
+
   .mobile-hamburger-menu {
     display: flex;
     flex: 0 0 auto;
@@ -1161,46 +1170,65 @@ html.dark-mode .glance-timer-inline {
     border-radius: 5px;
     min-height: 100%;
   }
-
   html.dark-mode {
-  --text-color: #f0f0f0;
-  --button-default-border: #555;
-  --button-default-hover-bg: #2a2a2a;
-  --button-primary-bg: pink;
-  --button-primary-hover-bg: pink;
-  --play-button-bg: #333;
-  --play-button-border: #555;
-  --play-button-hover-bg: #444;
-  --show-activity-button-bg: #4caf50;
-  --show-activity-button-hover-bg: #45a049;
+    --text-color: #f0f0f0;
+    --button-default-text: var(--text-color);
+    --button-default-hover-bg: black;
+    --button-primary-bg: black;
+    --button-primary-text: white;
+  }
 
-  --show-activity-button-bg-mobile: pink;
-  --show-activity-button-hover-bg-mobile: pink;
+  html {
+    --text-color: #333;
+    --button-default-text: var(--text-color);
+    --button-default-hover-bg: white;
+    --button-default-primary-bg: white;
+    --button-primary-bg: white;
+    --button-primary-text: black;
+  }
+  button:focus,
+  button:focus-visible,
+  .menu-button:focus,
+  .menu-button:focus-visible {
+    outline: 2px solid var(--button-primary-bg);
+    background-color: var(--button-primary-bg);
+    color: var(--button-primary-text);
+  }
 
-  --toggle-activity-view-button-bg: #5a6268;
-  --toggle-activity-view-button-hover-bg: #495057;
-  --error-message-color: #f1a9a9;
-  --error-background: #3b2a2a;
-  --error-border: #5a3e3e;
-  --feedback-hint-color: #e2b7b7;
-  --modal-bg: #2a2a2a;
-  --modal-text: #f0f0f0;
-  --modal-border: #555;
-  --text-color-muted: #777;
-  --blank-border-color: #777;
-  --blank-bg-color: #2a2a2a;
-  --blank-hover-bg-color: #333;
-  --blank-correct-color: #66ff66;
-  --blank-incorrect-color: #ff6666;
-  --sidebar-bg: #2c3034;
-  --sidebar-border: #454d55;
-  --word-bank-bg-sidebar: #343a40;
-  --draggable-word-bg: #444;
-  --draggable-word-border: #666;
-  --draggable-word-hover-bg: #555;
-  --progress-bar-outer-bg: #333;
-  --progress-bar-inner-bg: #66bb6a;
-  --word-active-color: #ff5e57;
-  --word-hover-color: pink;
-}
+  .mobile-dropdown {
+    background: white; /* Ejemplo azul sólido */
+    --text-color: black;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px 0 #0003;
+    padding: 0.3em 0.2em;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    /* Puedes agregar más estilos si lo necesitas */
+  }
+
+  html.dark-mode .mobile-dropdown {
+    background: #1a2236; /* Azul oscuro sólido para modo oscuro */
+    color: #fff;
+  }
+
+  /* ----- Re-order left-side content: buttons 1st, word bank 2nd  ----- */
+
+  .activity-action-buttons-sidebar {
+    order: 2;
+    margin-bottom: 1rem;
+    padding-top: 0;
+  }
+  .sidebar-word-bank {
+    order: 3;
+  }
+  .exercise-main-area-right {
+    padding: 0 40px;
+  }
+  .sentence-line-container {
+    margin-bottom: 5px;
+  }
+  .app-container {
+    margin-top: 33px; /* Ajusta este valor al alto real de tu barra */
+  }
 }
