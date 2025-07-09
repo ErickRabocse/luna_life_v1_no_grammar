@@ -31,6 +31,9 @@ const ACCESS_CODES = {
     'IRIS', // Capítulo 8
   ],
 }
+function isMobileDevice() {
+  return window.matchMedia('(max-width: 700px)').matches
+}
 
 function DraggableWord({ word, isUsed }) {
   const [{ isDragging }, drag] = useDrag(() => ({
@@ -623,7 +626,9 @@ function App() {
                   isShowingTextDuringActivity &&
                   activityModeIsActive && (
                     <span className="glance-timer-inline">
-                      Volviendo al ejercicio en: {glanceTimeRemaining}s
+                      {isMobileDevice()
+                        ? `${glanceTimeRemaining}s`
+                        : `Volviendo al ejercicio en: ${glanceTimeRemaining}`}
                     </span>
                   )}
               </h2>
@@ -738,7 +743,9 @@ function App() {
           )}
           {isGlanceTimerActive && isShowingTextDuringActivity && (
             <p className="glance-timer-display">
-              Volviendo al ejercicio en: {glanceTimeRemaining}s
+              {isMobileDevice()
+                ? `${glanceTimeRemaining}s`
+                : `Volviendo al ejercicio en: ${glanceTimeRemaining}`}
             </p>
           )}
         </div>
@@ -982,7 +989,11 @@ function App() {
               </button>
               <button
                 onClick={handlePlaybackToggle}
-                disabled={mainControlsDisabled}
+                disabled={
+                  mainControlsDisabled ||
+                  showActivity ||
+                  (isShowingTextDuringActivity && isGlanceTimerActive)
+                }
                 className={
                   isScenePlaying ? 'play-scene-button-active-mobile' : ''
                 }
@@ -994,8 +1005,19 @@ function App() {
                   if (
                     currentChapter &&
                     sceneIndex < currentChapter.scenes.length - 1
-                  )
+                  ) {
+                    // Avanza a la siguiente escena
                     handleSceneAdvance(1)
+                  } else if (
+                    chapterIndex < allChapters.length - 1 &&
+                    currentChapter &&
+                    sceneIndex === currentChapter.scenes.length - 1
+                  ) {
+                    // Estás en la última escena del capítulo, avanza de capítulo
+                    setChapterIndex(chapterIndex + 1)
+                    setSceneIndex(0)
+                    resetViewAndTimer()
+                  }
                 }}
                 className={
                   animateNextSceneButton ? 'next-scene-button-animate' : ''
@@ -1059,7 +1081,11 @@ function App() {
             />
             <button
               onClick={handlePlaybackToggle}
-              disabled={mainControlsDisabled}
+              disabled={
+                mainControlsDisabled ||
+                showActivity ||
+                (isShowingTextDuringActivity && isGlanceTimerActive)
+              }
               className={isScenePlaying ? 'play-scene-button-active' : ''}
             >
               {isPaused ? 'Continuar' : isScenePlaying ? 'Pause' : 'Play Scene'}

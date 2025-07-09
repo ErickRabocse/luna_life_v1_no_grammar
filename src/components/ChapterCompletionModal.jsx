@@ -70,7 +70,7 @@ export function ChapterCompletionModal({ details, onProceed, buttonText }) {
           </p>
         )}
 
-        <p>Excellent work, {details.studentName}! Keep it up!</p>
+        <p>Excellent work, keep it up!</p>
         <button onClick={handleProceed} className="modal-submit-button">
           {buttonText || 'Practice Section'}
         </button>

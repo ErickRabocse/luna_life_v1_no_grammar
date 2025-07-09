@@ -991,16 +991,7 @@ html.dark-mode .glance-timer-inline {
     width: 100%;
     min-height: unset;
   }
-  /* .mobile-bar-row {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    width: 100%;
-    justify-content: space-between;
-    padding: 0;
-    margin: 0;
-    gap: 0.4rem;
-  } */
+
   .mobile-bar-row {
     position: fixed;
     top: 0;
@@ -1230,5 +1221,10 @@ html.dark-mode .glance-timer-inline {
   }
   .app-container {
     margin-top: 33px; /* Ajusta este valor al alto real de tu barra */
+  }
+  .glance-timer-inline {
+    margin-right: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
   }
 }
