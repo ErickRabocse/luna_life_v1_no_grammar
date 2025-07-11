@@ -64,6 +64,8 @@ const DragDropSentence = forwardRef(
       !!isInternallyCompletedProp
     )
 
+    const [activeTooltip, setActiveTooltip] = useState(null)
+
     useEffect(() => {
       setIsInternallyCompleted(!!isInternallyCompletedProp)
     }, [isInternallyCompletedProp])
@@ -225,6 +227,7 @@ const DragDropSentence = forwardRef(
               if (part.currentWord === null) {
                 newErrors[sentence.id] = {
                   hint: `Asegúrate de completar todos los espacios.`,
+                  mobileHint: 'Incompleto',
                 }
                 break // Pasamos a la siguiente oración si esta ya tiene un error
               }
@@ -234,6 +237,7 @@ const DragDropSentence = forwardRef(
                   hint:
                     part.hint ||
                     `La palabra "${part.currentWord}" no es correcta aquí.`,
+                  mobileHint: `Incorrecto`,
                 }
                 break // Pasamos a la siguiente oración
               }
@@ -346,7 +350,36 @@ const DragDropSentence = forwardRef(
 
             {/* 3. Y aquí renderizamos la burbuja si hay un error para esta oración */}
             {errors[sentence.id] && (
-              <div className="error-bubble">{errors[sentence.id].hint}</div>
+              <div
+                className="error-info-container"
+                style={{
+                  display: 'inline-block',
+                  position: 'relative',
+                  marginLeft: 6,
+                }}
+              >
+                <span
+                  className="info-icon"
+                  tabIndex={0}
+                  role="button"
+                  aria-label="Ver explicación del error"
+                  onClick={() =>
+                    setActiveTooltip(
+                      activeTooltip === sentence.id ? null : sentence.id
+                    )
+                  }
+                  onMouseEnter={() => setActiveTooltip(sentence.id)}
+                  onMouseLeave={() => setActiveTooltip(null)}
+                  onBlur={() => setActiveTooltip(null)}
+                >
+                  i
+                </span>
+                {activeTooltip === sentence.id && (
+                  <div className="error-tooltip">
+                    {errors[sentence.id].hint}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         ))}
