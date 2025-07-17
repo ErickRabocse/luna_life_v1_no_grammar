@@ -368,6 +368,31 @@ function App() {
         speechSynthesis.speak(utterance)
       }, 150)
     }
+    // const playNextSentence = (sentenceIndex) => {
+    //   if (sentenceIndex >= sentencesText.length) {
+    //     setIsScenePlaying(false)
+    //     setIsPaused(false)
+    //     setTimeout(() => {
+    //       setReadSentenceIndices(new Set()) // Limpiar después, o dejar coloreadas según UX
+    //     }, 1000)
+    //     return
+    //   }
+    //   // 💡 PUNTO CLAVE: Marca la oración como activa antes de reproducir
+    //   setReadSentenceIndices(new Set([sentenceIndex])) // <--- SOLO la que está activa
+
+    //   const utterance = new SpeechSynthesisUtterance(
+    //     sentencesText[sentenceIndex]
+    //   )
+    //   utterance.lang = 'en-US'
+    //   utterance.rate = 0.65
+    //   utterance.onend = () => {
+    //     playNextSentence(sentenceIndex + 1)
+    //   }
+    //   setTimeout(() => {
+    //     speechSynthesis.speak(utterance)
+    //   }, 150)
+    // }
+
     playNextSentence(0)
   }
 
