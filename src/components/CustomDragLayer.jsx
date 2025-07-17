@@ -20,7 +20,6 @@ export default function CustomDragLayer() {
     left: currentOffset.x,
     top: currentOffset.y,
     zIndex: 10000,
-    transform: 'translate(-20%, -20%)',
     fontWeight: 'normal',
     fontSize: '1.1rem',
     background: 'rgba(66, 135, 245, 0.13)', // subtle light blue with transparency
