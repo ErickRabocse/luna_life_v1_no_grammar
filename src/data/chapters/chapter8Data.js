@@ -208,8 +208,10 @@ export const chapter8Data = {
         { word: 'Luna and Sol', translation: 'Luna y Sol' },
         { word: 'wag their tails', translation: 'mueven sus colas' },
         { word: '.', translation: '' },
-        { word: 'Together,', translation: 'Juntas,' },
-        { word: 'they walk home', translation: 'caminan a casa' },
+        {
+          word: 'Together, they walk home',
+          translation: 'Juntas, caminan a casa',
+        },
         { word: '.', translation: '' },
         { word: 'A new adventure', translation: 'Una nueva aventura' },
         { word: 'is just beginning', translation: 'está comenzando' },

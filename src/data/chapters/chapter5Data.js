@@ -54,17 +54,14 @@ export const chapter5Data = {
         { word: 'a baby."', translation: 'una bebé."' },
         {
           word: "Sofia's parents watch",
-          translation: 'Los padres de Sofia observan',
+          translation: 'Los padres de Sofia observan', 
         },
         { word: '.', translation: '' },
         {
-          word: 'At first,',
-          translation: 'Al principio,',
+          word: 'At first, they are quiet',
+          translation: 'Al principio, no dicen nada',
         },
-        {
-          word: 'they are quiet',
-          translation: 'no dicen nada',
-        },
+
         { word: '.', translation: '' },
         {
           word: 'One morning, Luna brings',
