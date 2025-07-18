@@ -1223,8 +1223,13 @@ function App() {
             {chapterIndex > 0 && currentChapter && (
               <div className="chapter-progress-container">
                 <span className="chapter-progress-text">
-                  Capítulo {chapterIndex}: {completedScenesInCurrentChapter}/
-                  {currentChapter.scenes.length}
+                  Capítulo {chapterIndex}
+                  {!hasMasterAccess && (
+                    <>
+                      : {completedScenesInCurrentChapter}/
+                      {currentChapter.scenes.length}
+                    </>
+                  )}
                 </span>
                 <div className="progress-bar-outer">
                   <div
@@ -1234,6 +1239,7 @@ function App() {
                 </div>
               </div>
             )}
+
             {getGlobalSceneNumber() && (
               <div className="page-number-top-right">
                 Página {getGlobalSceneNumber()}
