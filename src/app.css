@@ -246,6 +246,7 @@ html.dark-mode .scene-image {
   overflow-y: auto;
   padding-right: 1rem;
   line-height: 1.7;
+  padding-bottom: 30px;
 }
 .exercise-fullscreen-layout {
   display: flex;
@@ -532,11 +533,12 @@ button:disabled {
 }
 .show-activity-button {
   display: block;
-  width: fit-content;
+  width: 100%;
   margin: 1rem auto;
   padding: 10px 20px;
   font-size: 1rem;
   background-color: var(--show-activity-button-bg);
+  /* border-radius: 10px; */
   color: white;
   border: none;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
@@ -1111,12 +1113,11 @@ html.dark-mode .glance-timer-inline {
   }
   .scrollable-text {
     font-size: 1.03rem;
-    padding: 0;
+    margin-bottom: 30px;
     line-height: 1.45;
     min-height: unset;
-    overflow: visible;
+    overflow-y: auto;
     max-height: unset;
-    margin-bottom: 10px;
   }
 
   /* ----- Botón flotante se vuelve fijo en la parte baja ----- */

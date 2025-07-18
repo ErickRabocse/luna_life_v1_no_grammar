@@ -11,6 +11,8 @@ import { HTML5Backend } from 'react-dnd-html5-backend'
 import { TouchBackend } from 'react-dnd-touch-backend'
 import StarEffect from './components/StarEffect'
 import CustomDragLayer from './components/CustomDragLayer' // o donde lo guardes
+import { useLayoutEffect } from 'react'
+
 import './app.css'
 
 const FONT_SIZES = ['1.2rem', '1.4rem', '1.6rem']
@@ -292,8 +294,7 @@ function App() {
       setAvailableWords([])
       setPlacedWords(new Set())
     }
-    const scrollableTextElement = document.querySelector('.scrollable-text')
-    if (scrollableTextElement) scrollableTextElement.scrollTop = 0
+
     if (!showActivity && dragDropSentenceRef.current?.resetActivityState) {
       dragDropSentenceRef.current.resetActivityState()
     }
@@ -304,6 +305,15 @@ function App() {
     activityIsCompletedForCurrentScene,
     showActivity,
   ])
+  useLayoutEffect(() => {
+    if (
+      scrollableTextRef.current &&
+      !showActivity &&
+      isMobileDevice() // 👈 SOLO ejecuta esto en móvil
+    ) {
+      scrollableTextRef.current.scrollTop = 0
+    }
+  }, [chapterIndex, sceneIndex, showActivity, isShowingTextDuringActivity])
 
   useEffect(() => {
     localStorage.setItem(
@@ -1286,6 +1296,19 @@ function App() {
               className={`show-activity-button${
                 hasShownActivityButton ? ' animate-slide-up' : ''
               }`}
+              style={{
+                position: 'fixed',
+                left: 0,
+                right: 0,
+                bottom: '15px',
+
+                margin: 'auto',
+                marginBottom: '.5rem',
+                maxWidth: '430px',
+                width: '96%',
+                zIndex: 100,
+                // El resto de tus estilos normales del botón
+              }}
             >
               Show Exercise
             </button>
