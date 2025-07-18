@@ -98,7 +98,11 @@ function App() {
     setIsScenePlaying(false)
   }, [])
 
+  const [hasShownActivityButton, setHasShownActivityButton] = useState(false)
+
+  const [hasListenedToScene, setHasListenedToScene] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const [isAtBottom, setIsAtBottom] = useState(false)
 
   const [isPaused, setIsPaused] = useState(false)
   const [chapterIndex, setChapterIndex] = useState(0)
@@ -165,6 +169,33 @@ function App() {
       setTimeout(() => setHighlightChapterSelector(false), 5000)
     }
   }
+
+  const scrollableTextRef = useRef(null)
+  useEffect(() => {
+    const container = scrollableTextRef.current
+    if (!container) return
+
+    const handleScroll = () => {
+      const atBottom =
+        container.scrollTop + container.clientHeight >=
+        container.scrollHeight - 8 // margen de error
+      setIsAtBottom(atBottom)
+    }
+
+    container.addEventListener('scroll', handleScroll)
+    // Llama una vez por si ya está abajo al cargar
+    handleScroll()
+    return () => container.removeEventListener('scroll', handleScroll)
+  }, [scrollableTextRef, hasListenedToScene])
+
+  useEffect(() => {
+    console.log('isAtBottom:', isAtBottom)
+  }, [isAtBottom])
+  useEffect(() => {
+    if (!hasShownActivityButton && hasListenedToScene && isAtBottom) {
+      setHasShownActivityButton(true)
+    }
+  }, [hasListenedToScene, isAtBottom, hasShownActivityButton])
 
   const [unlockedChapters, setUnlockedChapters] = useState([0]) // 0 = Introducción desbloqueada siempre
   const [hasMasterAccess, setHasMasterAccess] = useState(false)
@@ -324,6 +355,7 @@ function App() {
     setBlurPage(false)
     setShowCongratulatoryModal(false)
     dragDropSentenceRef.current?.resetActivityState()
+    setHasListenedToScene(false)
   }
 
   const playFullScene = () => {
@@ -350,6 +382,11 @@ function App() {
       if (sentenceIndex >= sentencesText.length) {
         setIsScenePlaying(false)
         setIsPaused(false)
+        setHasListenedToScene(true)
+        console.log(
+          'El usuario escuchó toda la escena: hasListenedToScene=true'
+        )
+
         setTimeout(() => {
           setReadSentenceIndices(new Set())
         }, 1000)
@@ -368,31 +405,6 @@ function App() {
         speechSynthesis.speak(utterance)
       }, 150)
     }
-    // const playNextSentence = (sentenceIndex) => {
-    //   if (sentenceIndex >= sentencesText.length) {
-    //     setIsScenePlaying(false)
-    //     setIsPaused(false)
-    //     setTimeout(() => {
-    //       setReadSentenceIndices(new Set()) // Limpiar después, o dejar coloreadas según UX
-    //     }, 1000)
-    //     return
-    //   }
-    //   // 💡 PUNTO CLAVE: Marca la oración como activa antes de reproducir
-    //   setReadSentenceIndices(new Set([sentenceIndex])) // <--- SOLO la que está activa
-
-    //   const utterance = new SpeechSynthesisUtterance(
-    //     sentencesText[sentenceIndex]
-    //   )
-    //   utterance.lang = 'en-US'
-    //   utterance.rate = 0.65
-    //   utterance.onend = () => {
-    //     playNextSentence(sentenceIndex + 1)
-    //   }
-    //   setTimeout(() => {
-    //     speechSynthesis.speak(utterance)
-    //   }, 150)
-    // }
-
     playNextSentence(0)
   }
 
@@ -819,7 +831,7 @@ function App() {
             )}
           </div>
           <div className="content-area-wrapper">
-            <div className={`scrollable-text`}>
+            <div className={`scrollable-text`} ref={scrollableTextRef}>
               {(() => {
                 const sentences = []
                 let currentSentenceWords = []
@@ -1259,7 +1271,9 @@ function App() {
         {hasActivity &&
           !hasMasterAccess && // 👈 Nueva condición, oculta ejercicios con master code
           !showActivity &&
-          !activityIsCompletedForCurrentScene && (
+          !activityIsCompletedForCurrentScene &&
+          hasListenedToScene &&
+          isAtBottom && (
             <button
               onClick={() => {
                 speechSynthesis.cancel()
@@ -1269,7 +1283,9 @@ function App() {
                 setShowActivity(true)
                 setIsShowingTextDuringActivity(false)
               }}
-              className="show-activity-button"
+              className={`show-activity-button${
+                hasShownActivityButton ? ' animate-slide-up' : ''
+              }`}
             >
               Show Exercise
             </button>

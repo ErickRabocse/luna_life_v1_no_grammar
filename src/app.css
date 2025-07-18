@@ -1116,20 +1116,22 @@ html.dark-mode .glance-timer-inline {
     min-height: unset;
     overflow: visible;
     max-height: unset;
-    margin-bottom: 40px;
+    margin-bottom: 10px;
   }
 
   /* ----- Botón flotante se vuelve fijo en la parte baja ----- */
   .show-activity-button {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    margin: 0 auto;
-    width: 100vw;
-    border-radius: 0;
-    z-index: 9999;
-    box-shadow: 0 -2px 10px 2px #00000022;
+    width: 100%;
+    margin-bottom: 2rem;
+    padding: 0.5em 0;
+    font-size: 1.1em;
+    font-weight: 700;
+    border-radius: 1em;
+    background: #32b74e;
+    color: #fff;
+    border: none;
+    box-shadow: 0 0 10px 3px #84e8c1;
+    transition: background 0.22s, transform 0.28s;
   }
   /* ----- Oculta controles desktop ----- */
   .left-controls,
@@ -1235,5 +1237,19 @@ html.dark-mode .glance-timer-inline {
     margin-right: 0;
     font-size: 1.5rem;
     font-weight: 500;
+  }
+  @keyframes slideUpShow {
+    from {
+      opacity: 0;
+      transform: translateY(80px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .show-activity-button.animate-slide-up {
+    animation: slideUpShow 0.5s cubic-bezier(0.39, 0.58, 0.57, 1) both;
   }
 }
