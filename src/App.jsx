@@ -1,4 +1,11 @@
-import { useEffect, useState, useRef, useMemo, useCallback } from 'react'
+import {
+  useEffect,
+  useState,
+  useRef,
+  useMemo,
+  useCallback,
+  useLayoutEffect,
+} from 'react'
 import Word from './Word'
 import { allChapters } from './data/chapters'
 import ChapterSelector from './components/ChapterSelector'
@@ -11,8 +18,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend'
 import { TouchBackend } from 'react-dnd-touch-backend'
 import StarEffect from './components/StarEffect'
 import CustomDragLayer from './components/CustomDragLayer' // o donde lo guardes
-import { useLayoutEffect } from 'react'
-
 import './app.css'
 
 const FONT_SIZES = ['1.2rem', '1.4rem', '1.6rem']
@@ -132,6 +137,7 @@ function App() {
   const glanceTimerRef = useRef(null)
   const dragDropSentenceRef = useRef(null)
   const menuRef = useRef(null)
+  const mobileIndicatorsRef = useRef(null)
 
   const [sessionStartTime, setSessionStartTime] = useState(null)
   const currentChapter = allChapters[chapterIndex]
@@ -305,15 +311,6 @@ function App() {
     activityIsCompletedForCurrentScene,
     showActivity,
   ])
-  useLayoutEffect(() => {
-    if (
-      scrollableTextRef.current &&
-      !showActivity &&
-      isMobileDevice() // 👈 SOLO ejecuta esto en móvil
-    ) {
-      scrollableTextRef.current.scrollTop = 0
-    }
-  }, [chapterIndex, sceneIndex, showActivity, isShowingTextDuringActivity])
 
   useEffect(() => {
     localStorage.setItem(
@@ -577,6 +574,24 @@ function App() {
       if (glanceTimerRef.current) clearInterval(glanceTimerRef.current)
     }
   }, [isGlanceTimerActive, glanceTimeRemaining])
+
+  useLayoutEffect(() => {
+    if (isMobileDevice() && mobileIndicatorsRef.current) {
+      // Primero hace scroll al elemento
+      mobileIndicatorsRef.current.scrollIntoView({
+        behavior: 'instant',
+        block: 'start',
+      })
+      // Luego ajusta hacia arriba X píxeles
+      window.scrollBy(0, -50) // Cambia 50 por la altura real del div + margen deseado
+    }
+  }, [
+    chapterIndex,
+    sceneIndex,
+    showActivity,
+    isShowingTextDuringActivity,
+    activityIsCompletedForCurrentScene,
+  ])
 
   const handleToggleActivityView = () => {
     if (activityIsCompletedForCurrentScene && !isShowingTextDuringActivity) {
@@ -1086,7 +1101,10 @@ function App() {
           </div>
 
           {/* Indicadores: capítulo a la izquierda, página a la derecha */}
-          <div className="mobile-only mobile-indicators">
+          <div
+            className="mobile-only mobile-indicators"
+            ref={mobileIndicatorsRef}
+          >
             <span className="mobile-chapter-indicator">
               Cap. {chapterIndex}
             </span>
