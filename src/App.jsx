@@ -1025,33 +1025,41 @@ function App() {
               >
                 {isPaused ? '▶️' : isScenePlaying ? ' ⏸️' : '▶️'}
               </button>
-              <button
-                onClick={() => {
-                  if (
-                    currentChapter &&
-                    sceneIndex < currentChapter.scenes.length - 1
-                  ) {
-                    // Avanza a la siguiente escena
-                    handleSceneAdvance(1)
-                  } else if (
-                    chapterIndex < allChapters.length - 1 &&
-                    currentChapter &&
-                    sceneIndex === currentChapter.scenes.length - 1
-                  ) {
-                    // Estás en la última escena del capítulo, avanza de capítulo
-                    setChapterIndex(chapterIndex + 1)
-                    setSceneIndex(0)
-                    resetViewAndTimer()
+              {isLastSceneInChapter &&
+              isMobileDevice() &&
+              activityIsCompletedForCurrentScene ? (
+                <button onClick={handleGoToIntro} aria-label="Ir a la portada">
+                  <span role="img" aria-label="Home">
+                    🏠
+                  </span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (
+                      currentChapter &&
+                      sceneIndex < currentChapter.scenes.length - 1
+                    ) {
+                      handleSceneAdvance(1)
+                    } else if (
+                      chapterIndex < allChapters.length - 1 &&
+                      currentChapter &&
+                      sceneIndex === currentChapter.scenes.length - 1
+                    ) {
+                      setChapterIndex(chapterIndex + 1)
+                      setSceneIndex(0)
+                      resetViewAndTimer()
+                    }
+                  }}
+                  className={
+                    animateNextSceneButton ? 'next-scene-button-animate' : ''
                   }
-                }}
-                className={
-                  animateNextSceneButton ? 'next-scene-button-animate' : ''
-                }
-                disabled={nextSceneButtonDisabled}
-                aria-label="Next"
-              >
-                ➡️
-              </button>
+                  disabled={nextSceneButtonDisabled}
+                  aria-label="Next"
+                >
+                  ➡️
+                </button>
+              )}
             </div>
           </div>
 
