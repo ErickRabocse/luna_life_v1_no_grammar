@@ -75,6 +75,13 @@ function isTouchDevice() {
 }
 const touchDevice = isTouchDevice()
 
+function getSceneAudioSrc(chapterIdx, sceneIdx) {
+  if (chapterIdx === 1) {
+    return `/audio/ch1/1.${sceneIdx + 1}.mp3`
+  }
+  return null
+}
+
 function App() {
   useEffect(() => {
     localStorage.removeItem('completedActivities')
@@ -104,6 +111,7 @@ function App() {
     setPlacedWords(new Set())
     setIsScenePlaying(false)
   }, [])
+  const [shouldBlinkPlayButton, setShouldBlinkPlayButton] = useState(false)
 
   const [hasShownActivityButton, setHasShownActivityButton] = useState(false)
 
@@ -138,6 +146,7 @@ function App() {
   const dragDropSentenceRef = useRef(null)
   const menuRef = useRef(null)
   const mobileIndicatorsRef = useRef(null)
+  const audioRef = useRef(null)
 
   const [sessionStartTime, setSessionStartTime] = useState(null)
   const currentChapter = allChapters[chapterIndex]
@@ -172,6 +181,10 @@ function App() {
     setStudentGroup(groupFromModal)
     setShowStudentNameModal(false)
     setSessionStartTime(Date.now())
+
+    // 👇 Asegura que no parpadee al entrar el nombre
+    setShouldBlinkPlayButton(false)
+
     if (chapterIndex === 0) {
       setHighlightChapterSelector(true)
       setTimeout(() => setHighlightChapterSelector(false), 5000)
@@ -195,6 +208,11 @@ function App() {
     handleScroll()
     return () => container.removeEventListener('scroll', handleScroll)
   }, [scrollableTextRef, hasListenedToScene])
+  useEffect(() => {
+    if (chapterIndex !== null && sceneIndex !== null && sceneIndex >= 0) {
+      setHasListenedToScene(false)
+    }
+  }, [chapterIndex, sceneIndex])
 
   useEffect(() => {
     console.log('isAtBottom:', isAtBottom)
@@ -350,8 +368,18 @@ function App() {
     }, 150)
   }
   const resetViewAndTimer = () => {
-    setReadSentenceIndices(new Set())
+    // 🚫 Detener audio personalizado si está sonando
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+      audioRef.current = null
+    }
+
+    // 🚫 Detener speechSynthesis si está activo
     speechSynthesis.cancel()
+
+    // 🔄 Resto de tu lógica original
+    setReadSentenceIndices(new Set())
     setIsPaused(false)
     setIsScenePlaying(false)
     setShowActivity(false)
@@ -366,9 +394,34 @@ function App() {
   }
 
   const playFullScene = () => {
-    if (isScenePlaying || !currentScene || !currentScene.text) return
-    setIsPaused(false)
-    if (speechSynthesis.speaking) speechSynthesis.cancel()
+    if (isScenePlaying || !currentScene) return
+
+    // Intentar obtener un MP3 personalizado
+    const audioSrc = getSceneAudioSrc(chapterIndex, sceneIndex)
+
+    if (audioSrc) {
+      audioRef.current = new Audio(audioSrc)
+
+      audioRef.current.onended = () => {
+        setIsScenePlaying(false)
+        setIsPaused(false)
+        setHasListenedToScene(true)
+        console.log('🎧 Audio finalizado (MP3): hasListenedToScene = true')
+      }
+
+      audioRef.current.onerror = () => {
+        console.error('❌ Error al cargar el audio:', audioSrc)
+        setIsScenePlaying(false)
+      }
+
+      setIsScenePlaying(true)
+      setIsPaused(false)
+
+      audioRef.current.play()
+      return
+    }
+
+    // 🔄 Si no hay MP3, usar el comportamiento original con speechSynthesis
     const sentencesText = currentScene.text
       .reduce((acc, item) => {
         if (
@@ -382,44 +435,62 @@ function App() {
         return acc
       }, [])
       .map((sentence) => sentence.replace(/\s+([.,!?])/g, '$1'))
+
     if (sentencesText.length === 0) return
+
     setIsScenePlaying(true)
     setReadSentenceIndices(new Set())
+
     const playNextSentence = (sentenceIndex) => {
       if (sentenceIndex >= sentencesText.length) {
         setIsScenePlaying(false)
         setIsPaused(false)
         setHasListenedToScene(true)
-        console.log(
-          'El usuario escuchó toda la escena: hasListenedToScene=true'
-        )
-
+        console.log('🗣️ Speech finalizado: hasListenedToScene = true')
         setTimeout(() => {
           setReadSentenceIndices(new Set())
         }, 1000)
         return
       }
+
       setReadSentenceIndices((prev) => new Set(prev).add(sentenceIndex))
+
       const utterance = new SpeechSynthesisUtterance(
         sentencesText[sentenceIndex]
       )
       utterance.lang = 'en-US'
       utterance.rate = 0.65
-      utterance.onend = () => {
-        playNextSentence(sentenceIndex + 1)
-      }
+      utterance.onend = () => playNextSentence(sentenceIndex + 1)
+
       setTimeout(() => {
         speechSynthesis.speak(utterance)
       }, 150)
     }
+
     playNextSentence(0)
   }
 
   const handlePlaybackToggle = () => {
+    const audioSrc = getSceneAudioSrc(chapterIndex, sceneIndex)
+
+    // Si hay un MP3 y el ref tiene audio cargado
+    if (audioSrc && audioRef.current) {
+      if (isPaused) {
+        audioRef.current.play()
+        setIsPaused(false)
+      } else {
+        audioRef.current.pause()
+        setIsPaused(true)
+      }
+      return
+    }
+
+    // Fallback: speechSynthesis
     if (!isScenePlaying) {
       playFullScene()
       return
     }
+
     if (isPaused) {
       speechSynthesis.resume()
       setIsPaused(false)
@@ -437,20 +508,23 @@ function App() {
       return
     }
 
-    // Si no está desbloqueado, pide el código
     const code = window.prompt(
       'This chapter is protected. Please enter the access code provided by your teacher:'
     )
-    if (!code) return // Cancelado
+    if (!code) return
 
     const codeUpper = code.trim().toUpperCase()
 
     if (codeUpper === ACCESS_CODES.master) {
       setHasMasterAccess(true)
-      setUnlockedChapters([...Array(ACCESS_CODES.chapters.length + 1).keys()]) // Desbloquea todos los capítulos (incluye introducción)
+      setUnlockedChapters([...Array(ACCESS_CODES.chapters.length + 1).keys()])
       setChapterIndex(newIndex)
       setSceneIndex(0)
       resetViewAndTimer()
+
+      // ✅ Parpadea al desbloquear con código maestro
+      setShouldBlinkPlayButton(true)
+      setTimeout(() => setShouldBlinkPlayButton(false), 5000)
       return
     }
 
@@ -465,6 +539,10 @@ function App() {
       setChapterIndex(newIndex)
       setSceneIndex(0)
       resetViewAndTimer()
+
+      // ✅ Parpadea al desbloquear con código de capítulo
+      setShouldBlinkPlayButton(true)
+      setTimeout(() => setShouldBlinkPlayButton(false), 5000)
       return
     }
 
@@ -474,7 +552,14 @@ function App() {
   const handleSceneAdvance = (offset) => {
     setSceneIndex((prev) => prev + offset)
     resetViewAndTimer()
+
+    // 👇 Si venimos de un ejercicio completado, hacer parpadear el botón de play
+    if (animateNextSceneButton) {
+      setShouldBlinkPlayButton(true)
+      setTimeout(() => setShouldBlinkPlayButton(false), 5000)
+    }
   }
+
   const handleGoToLastSceneOfPrevChapter = () => {
     const prevCh = chapterIndex - 1
     setChapterIndex(prevCh)
@@ -1056,9 +1141,13 @@ function App() {
                   showActivity ||
                   (isShowingTextDuringActivity && isGlanceTimerActive)
                 }
-                className={
-                  isScenePlaying ? 'play-scene-button-active-mobile' : ''
-                }
+                className={`play-scene-button ${
+                  isScenePlaying
+                    ? 'play-scene-button-active'
+                    : shouldBlinkPlayButton
+                    ? 'play-scene-button-animate'
+                    : ''
+                }`}
               >
                 {isPaused ? '▶️' : isScenePlaying ? ' ⏸️' : '▶️'}
               </button>
@@ -1159,7 +1248,13 @@ function App() {
                 showActivity ||
                 (isShowingTextDuringActivity && isGlanceTimerActive)
               }
-              className={isScenePlaying ? 'play-scene-button-active' : ''}
+              className={`play-scene-button ${
+                isScenePlaying
+                  ? 'play-scene-button-active'
+                  : shouldBlinkPlayButton
+                  ? 'play-scene-button-animate'
+                  : ''
+              }`}
             >
               {isPaused ? 'Continuar' : isScenePlaying ? 'Pause' : 'Play Scene'}
             </button>
