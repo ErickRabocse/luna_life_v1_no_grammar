@@ -403,10 +403,14 @@ function App() {
       audioRef.current = new Audio(audioSrc)
 
       audioRef.current.onended = () => {
+        // 🔁 Reinicia completamente todos los estados involucrados
         setIsScenePlaying(false)
         setIsPaused(false)
+        setReadSentenceIndices(new Set()) // importante para reiniciar la lectura
         setHasListenedToScene(true)
-        console.log('🎧 Audio finalizado (MP3): hasListenedToScene = true')
+
+        // 🔧 Debug opcional:
+        console.log('🟢 Audio finalizado. Estados reiniciados.')
       }
 
       audioRef.current.onerror = () => {
@@ -445,11 +449,10 @@ function App() {
       if (sentenceIndex >= sentencesText.length) {
         setIsScenePlaying(false)
         setIsPaused(false)
+        setReadSentenceIndices(new Set())
         setHasListenedToScene(true)
-        console.log('🗣️ Speech finalizado: hasListenedToScene = true')
-        setTimeout(() => {
-          setReadSentenceIndices(new Set())
-        }, 1000)
+
+        console.log('🟢 SpeechSynthesis terminado. Estados reiniciados.')
         return
       }
 
@@ -463,6 +466,7 @@ function App() {
       utterance.onend = () => playNextSentence(sentenceIndex + 1)
 
       setTimeout(() => {
+        speechSynthesis.cancel() // ✅ asegura que no haya otra frase pendiente
         speechSynthesis.speak(utterance)
       }, 150)
     }
@@ -487,6 +491,17 @@ function App() {
 
     // Fallback: speechSynthesis
     if (!isScenePlaying) {
+      // Reinicia por completo el audio antes de reproducir
+      speechSynthesis.cancel()
+
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current.currentTime = 0
+      }
+
+      setIsPaused(false)
+      setReadSentenceIndices(new Set())
+
       playFullScene()
       return
     }
