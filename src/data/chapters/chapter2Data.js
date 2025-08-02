@@ -182,7 +182,7 @@ export const chapter2Data = {
         { word: '.', translation: '' },
         { word: 'A woman says', translation: 'Una mujer dice' },
         { word: ',', translation: '' },
-        { word: '"Oh', translation: '"Oh' },
+        { word: '"Aww', translation: '"¡Ay' },
         { word: ',', translation: '' },
         { word: 'what a cute', translation: 'qué lindo' },
         { word: 'puppy!"', translation: 'cachorrito!"' },

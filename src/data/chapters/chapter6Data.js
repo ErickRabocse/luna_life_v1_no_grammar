@@ -362,7 +362,7 @@ export const chapter6Data = {
         { word: '.', translation: '' },
         { word: '"Maybe we can', translation: '"Quizás podamos' },
         {
-          word: 'help them too, Luna',
+          word: 'help them too, Luna"',
           translation: 'ayudar a ellos también, Luna',
         },
         { word: '.', translation: '' },

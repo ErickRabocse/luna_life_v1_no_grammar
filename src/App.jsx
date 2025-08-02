@@ -76,8 +76,8 @@ function isTouchDevice() {
 const touchDevice = isTouchDevice()
 
 function getSceneAudioSrc(chapterIdx, sceneIdx) {
-  if (chapterIdx === 1) {
-    return `/audio/ch1/1.${sceneIdx + 1}.mp3`
+  if (chapterIdx > 0) {
+    return `/audio/ch${chapterIdx}/${chapterIdx}.${sceneIdx + 1}.mp3`
   }
   return null
 }
@@ -112,6 +112,7 @@ function App() {
     setIsScenePlaying(false)
   }, [])
   const [shouldBlinkPlayButton, setShouldBlinkPlayButton] = useState(false)
+  const [activeWord, setActiveWord] = useState(null)
 
   const [hasShownActivityButton, setHasShownActivityButton] = useState(false)
 
@@ -344,29 +345,7 @@ function App() {
   }, [fontSizeIndex])
 
   const currentFontSize = FONT_SIZES[fontSizeIndex]
-  const [activeWord, setActiveWord] = useState(null)
-  const speakWord = (wordToSpeak) => {
-    if (isScenePlaying) {
-      setIsScenePlaying(false)
-      setIsPaused(false)
-    }
-    setReadSentenceIndices(new Set())
-    if (speechSynthesis.speaking) {
-      speechSynthesis.cancel()
-    }
-    const utterance = new SpeechSynthesisUtterance(wordToSpeak)
-    utterance.lang = 'en-US'
-    utterance.rate = 0.6
-    utterance.onstart = () => {
-      setActiveWord(wordToSpeak)
-    }
-    utterance.onend = () => {
-      setActiveWord(null)
-    }
-    setTimeout(() => {
-      speechSynthesis.speak(utterance)
-    }, 150)
-  }
+
   const resetViewAndTimer = () => {
     // 🚫 Detener audio personalizado si está sonando
     if (audioRef.current) {
@@ -374,9 +353,6 @@ function App() {
       audioRef.current.currentTime = 0
       audioRef.current = null
     }
-
-    // 🚫 Detener speechSynthesis si está activo
-    speechSynthesis.cancel()
 
     // 🔄 Resto de tu lógica original
     setReadSentenceIndices(new Set())
@@ -424,61 +400,13 @@ function App() {
       audioRef.current.play()
       return
     }
-
-    // 🔄 Si no hay MP3, usar el comportamiento original con speechSynthesis
-    const sentencesText = currentScene.text
-      .reduce((acc, item) => {
-        if (
-          !acc.length ||
-          ['.', ',', '!', '?'].includes(acc[acc.length - 1].slice(-1))
-        ) {
-          acc.push(item.word)
-        } else {
-          acc[acc.length - 1] += ' ' + item.word
-        }
-        return acc
-      }, [])
-      .map((sentence) => sentence.replace(/\s+([.,!?])/g, '$1'))
-
-    if (sentencesText.length === 0) return
-
-    setIsScenePlaying(true)
-    setReadSentenceIndices(new Set())
-
-    const playNextSentence = (sentenceIndex) => {
-      if (sentenceIndex >= sentencesText.length) {
-        setIsScenePlaying(false)
-        setIsPaused(false)
-        setReadSentenceIndices(new Set())
-        setHasListenedToScene(true)
-
-        console.log('🟢 SpeechSynthesis terminado. Estados reiniciados.')
-        return
-      }
-
-      setReadSentenceIndices((prev) => new Set(prev).add(sentenceIndex))
-
-      const utterance = new SpeechSynthesisUtterance(
-        sentencesText[sentenceIndex]
-      )
-      utterance.lang = 'en-US'
-      utterance.rate = 0.65
-      utterance.onend = () => playNextSentence(sentenceIndex + 1)
-
-      setTimeout(() => {
-        speechSynthesis.cancel() // ✅ asegura que no haya otra frase pendiente
-        speechSynthesis.speak(utterance)
-      }, 150)
-    }
-
-    playNextSentence(0)
   }
 
   const handlePlaybackToggle = () => {
     const audioSrc = getSceneAudioSrc(chapterIndex, sceneIndex)
 
-    // Si hay un MP3 y el ref tiene audio cargado
     if (audioSrc && audioRef.current) {
+      // Audio ya cargado
       if (isPaused) {
         audioRef.current.play()
         setIsPaused(false)
@@ -489,30 +417,14 @@ function App() {
       return
     }
 
-    // Fallback: speechSynthesis
-    if (!isScenePlaying) {
-      // Reinicia por completo el audio antes de reproducir
-      speechSynthesis.cancel()
-
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audioRef.current.currentTime = 0
-      }
-
-      setIsPaused(false)
-      setReadSentenceIndices(new Set())
-
+    // 🆕 Si todavía no hay audio cargado, iniciamos la reproducción completa
+    if (!audioRef.current && audioSrc) {
       playFullScene()
       return
     }
 
-    if (isPaused) {
-      speechSynthesis.resume()
-      setIsPaused(false)
-    } else {
-      speechSynthesis.pause()
-      setIsPaused(true)
-    }
+    // ⚠️ En caso de que no haya audio disponible para esta escena
+    console.warn('⚠️ No hay audio disponible para esta escena.')
   }
 
   const handleChapterChange = (newIndex) => {
@@ -667,7 +579,6 @@ function App() {
     } else if (glanceTimeRemaining === 0 && isGlanceTimerActive) {
       setIsShowingTextDuringActivity(false)
       setIsGlanceTimerActive(false)
-      speechSynthesis.cancel()
       if (glanceTimerRef.current) clearInterval(glanceTimerRef.current)
     }
     return () => {
@@ -847,7 +758,6 @@ function App() {
                                   translation={translation}
                                   activeWord={activeWord}
                                   setActiveWord={setActiveWord}
-                                  onSpeak={speakWord}
                                   fontSize={currentFontSize}
                                 />
                               )}
@@ -1006,7 +916,6 @@ function App() {
                                   translation={translation}
                                   activeWord={activeWord}
                                   setActiveWord={setActiveWord}
-                                  onSpeak={speakWord}
                                   fontSize={currentFontSize}
                                 />
                               )}
@@ -1070,12 +979,7 @@ function App() {
           onParticlesLoaded={() => setShowCongratulatoryModal(true)}
         />
       )}
-      <div
-        className={`app-container ${blurPage ? 'app-container-blur' : ''}`}
-        onClick={() => {
-          if (activeWord) setActiveWord(null)
-        }}
-      >
+      <div className={`app-container ${blurPage ? 'app-container-blur' : ''}`}>
         <div className="top-button-bar">
           {/* Fila principal: hamburguesa + capítulo + controles */}
           <div className="mobile-only mobile-bar-row">
@@ -1414,7 +1318,6 @@ function App() {
           isAtBottom && (
             <button
               onClick={() => {
-                speechSynthesis.cancel()
                 setIsScenePlaying(false)
                 setIsPaused(false)
                 setReadSentenceIndices(new Set())
