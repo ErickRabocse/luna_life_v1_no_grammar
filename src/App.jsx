@@ -76,7 +76,7 @@ function isTouchDevice() {
 const touchDevice = isTouchDevice()
 
 function getSceneAudioSrc(chapterIdx, sceneIdx) {
-  if (chapterIdx > 0) {
+  if (chapterIdx >= 0) {
     return `/audio/ch${chapterIdx}/${chapterIdx}.${sceneIdx + 1}.mp3`
   }
   return null
