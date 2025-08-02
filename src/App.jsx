@@ -405,25 +405,37 @@ function App() {
   const handlePlaybackToggle = () => {
     const audioSrc = getSceneAudioSrc(chapterIndex, sceneIndex)
 
+    // 🆗 Si ya hay un audio cargado
     if (audioSrc && audioRef.current) {
-      // Audio ya cargado
+      const isEnded = audioRef.current.ended
+
+      // 🔁 Si ya terminó, vuelve a iniciar desde cero
+      if (isEnded) {
+        playFullScene()
+        return
+      }
+
+      // ▶️ Reanudar
       if (isPaused) {
         audioRef.current.play()
         setIsPaused(false)
+        setIsScenePlaying(true)
       } else {
+        // ⏸️ Pausar
         audioRef.current.pause()
         setIsPaused(true)
+        setIsScenePlaying(false)
       }
       return
     }
 
-    // 🆕 Si todavía no hay audio cargado, iniciamos la reproducción completa
+    // 🆕 Si no hay audio aún
     if (!audioRef.current && audioSrc) {
       playFullScene()
       return
     }
 
-    // ⚠️ En caso de que no haya audio disponible para esta escena
+    // ⚠️ Si no hay archivo de audio válido
     console.warn('⚠️ No hay audio disponible para esta escena.')
   }
 
@@ -1175,7 +1187,7 @@ function App() {
                   : ''
               }`}
             >
-              {isPaused ? 'Continuar' : isScenePlaying ? 'Pause' : 'Play Scene'}
+              {!isScenePlaying || isPaused ? 'Play' : 'Pause'}
             </button>
           </div>
 
